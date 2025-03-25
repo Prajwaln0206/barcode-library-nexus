@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 
 const Shell: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
   
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -26,7 +27,7 @@ const Shell: React.FC = () => {
         <main className="flex-1 pt-6 px-4 md:px-6 pb-12 md:ml-64 transition-all duration-300">
           <div className="container max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
-              <Outlet />
+              <Outlet key={location.pathname} />
             </AnimatePresence>
           </div>
         </main>
