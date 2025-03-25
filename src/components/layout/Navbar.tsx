@@ -46,11 +46,20 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
         </div>
         
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
-            <span className="sr-only">Notifications</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
+                <span className="sr-only">Notifications</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                No new notifications
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -78,9 +87,26 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
-            A
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="p-0">
+                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium cursor-pointer">
+                  A
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to="/profile">My Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/settings">Settings</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
