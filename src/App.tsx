@@ -11,28 +11,35 @@ import Books from "./pages/Books";
 import Users from "./pages/Users";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 
 // Layout
 import Shell from "./components/layout/Shell";
+
+// Auth Context
+import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <BrowserRouter>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          <Route element={<Shell />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/books" element={<Books />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route element={<Shell />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/books" element={<Books />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+            <Route path="/auth" element={<Auth />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
