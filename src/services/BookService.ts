@@ -27,7 +27,7 @@ export const getAllBooks = async (): Promise<BookInfo[]> => {
     location: book.location || '',
     barcode: book.barcode,
     isAvailable: book.status === 'available',
-    coverImage: book.cover_image || undefined
+    coverImage: undefined // Set default as undefined since cover_image doesn't exist in DB
   }));
 };
 
@@ -55,7 +55,7 @@ export const getBookByBarcode = async (barcode: string): Promise<BookInfo | null
     location: data.location || '',
     barcode: data.barcode,
     isAvailable: data.status === 'available',
-    coverImage: data.cover_image || undefined
+    coverImage: undefined // Set default as undefined since cover_image doesn't exist in DB
   };
 };
 
@@ -76,8 +76,8 @@ export const addBook = async (book: BookCreate): Promise<BookInfo> => {
         genre: book.genre,
         location: book.location,
         barcode: barcode,
-        status: 'available',
-        cover_image: book.coverImage
+        status: 'available'
+        // Removed cover_image as it doesn't exist in the database schema
       }
     ])
     .select()
@@ -97,7 +97,7 @@ export const addBook = async (book: BookCreate): Promise<BookInfo> => {
     location: data.location || '',
     barcode: data.barcode,
     isAvailable: data.status === 'available',
-    coverImage: data.cover_image || undefined
+    coverImage: undefined // Set default as undefined since cover_image doesn't exist in DB
   };
 };
 
@@ -111,8 +111,8 @@ export const updateBook = async (book: BookInfo): Promise<BookInfo> => {
       isbn: book.isbn,
       genre: book.genre,
       location: book.location,
-      status: book.isAvailable ? 'available' : 'checked_out',
-      cover_image: book.coverImage
+      status: book.isAvailable ? 'available' : 'checked_out'
+      // Removed cover_image as it doesn't exist in the database schema
     })
     .eq('id', book.id)
     .select()
@@ -132,7 +132,7 @@ export const updateBook = async (book: BookInfo): Promise<BookInfo> => {
     location: data.location || '',
     barcode: data.barcode,
     isAvailable: data.status === 'available',
-    coverImage: data.cover_image || undefined
+    coverImage: undefined // Set default as undefined since cover_image doesn't exist in DB
   };
 };
 
