@@ -1,0 +1,38 @@
+
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import Navbar from './Navbar';
+import Sidebar from './Sidebar';
+
+const Shell: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+  
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+  
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar toggleSidebar={toggleSidebar} />
+      
+      <div className="flex flex-1">
+        <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+        
+        <main className="flex-1 pt-6 px-4 md:px-6 pb-12 md:ml-64 transition-all duration-300">
+          <div className="container max-w-7xl mx-auto">
+            <AnimatePresence mode="wait">
+              <Outlet />
+            </AnimatePresence>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default Shell;
