@@ -1,9 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Bell, Menu } from 'lucide-react';
+import { Search, Bell, Menu, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 
 interface NavbarProps {
   toggleSidebar: () => void;
@@ -45,9 +51,33 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
             <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
             <span className="sr-only">Notifications</span>
           </Button>
-          <Button size="sm" className="hidden md:flex">
-            Add New
-          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="hidden md:flex">
+                <Plus className="mr-1 h-4 w-4" />
+                Add New
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link to="/books">
+                  Add New Book
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/users">
+                  Add New User
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/checkout">
+                  New Checkout
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
             A
           </div>

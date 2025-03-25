@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { BookOpen, Users, CheckSquare, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageTransition from '@/components/layout/PageTransition';
@@ -90,18 +91,18 @@ const Index = () => {
             <div className="glass-card rounded-xl p-6 h-full">
               <h3 className="text-lg font-medium mb-4">Quick Actions</h3>
               <div className="space-y-2">
-                <a href="/books" className="block p-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                <Link to="/books" className="block p-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
                   <h4 className="font-medium">Manage Books</h4>
                   <p className="text-sm text-muted-foreground">Add, edit, or remove books from the system</p>
-                </a>
-                <a href="/users" className="block p-4 rounded-lg bg-accent hover:bg-accent/80 transition-colors">
+                </Link>
+                <Link to="/users" className="block p-4 rounded-lg bg-accent hover:bg-accent/80 transition-colors">
                   <h4 className="font-medium">Manage Users</h4>
                   <p className="text-sm text-muted-foreground">Handle user registrations and permissions</p>
-                </a>
-                <a href="/checkout" className="block p-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                </Link>
+                <Link to="/checkout" className="block p-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
                   <h4 className="font-medium">Checkout & Return</h4>
                   <p className="text-sm text-muted-foreground">Process book checkouts and returns</p>
-                </a>
+                </Link>
               </div>
             </div>
           </motion.div>
