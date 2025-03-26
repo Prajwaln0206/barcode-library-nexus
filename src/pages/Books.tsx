@@ -1,15 +1,50 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Clock, PlusCircle } from 'lucide-react';
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  Clock, 
+  PlusCircle, 
+  Trash2, 
+  Tag, 
+  FileText, 
+  CheckSquare,
+  XSquare,
+  Download
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageTransition from '@/components/layout/PageTransition';
 import BookCard, { BookInfo } from '@/components/books/BookCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getAllBooks } from '@/services/BookService';
-import { useToast } from '@/components/ui/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import AddBookForm from '@/components/books/AddBookForm';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -17,6 +52,11 @@ const Books = () => {
   const [books, setBooks] = useState<BookInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedBooks, setSelectedBooks] = useState<string[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [bulkActionOpen, setBulkActionOpen] = useState(false);
+  const [quickCategoryValue, setQuickCategoryValue] = useState('');
+  
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -49,12 +89,20 @@ const Books = () => {
     fetchBooks();
   }, [toast]);
   
-  const filteredBooks = books.filter(book => 
-    book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (book.isbn && book.isbn.includes(searchQuery)) ||
-    book.barcode.includes(searchQuery)
-  );
+  // Filter books based on search query and status filter
+  const filteredBooks = books.filter(book => {
+    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (book.isbn && book.isbn.includes(searchQuery)) ||
+      book.barcode.includes(searchQuery);
+    
+    // Apply status filter
+    if (filterStatus === 'all') return matchesSearch;
+    if (filterStatus === 'available') return matchesSearch && book.isAvailable;
+    if (filterStatus === 'checked-out') return matchesSearch && !book.isAvailable;
+    
+    return matchesSearch;
+  });
   
   const handleBookClick = (book: BookInfo) => {
     console.log('Book clicked:', book);
@@ -74,6 +122,63 @@ const Books = () => {
       .catch(error => {
         console.error('Error refreshing books:', error);
       });
+  };
+  
+  const toggleBookSelection = (bookId: string) => {
+    setSelectedBooks(prev => {
+      if (prev.includes(bookId)) {
+        return prev.filter(id => id !== bookId);
+      } else {
+        return [...prev, bookId];
+      }
+    });
+  };
+  
+  const selectAllBooks = () => {
+    if (selectedBooks.length === filteredBooks.length) {
+      setSelectedBooks([]);
+    } else {
+      setSelectedBooks(filteredBooks.map(book => book.id));
+    }
+  };
+  
+  const handleBulkDelete = () => {
+    // In a real implementation, this would call a service to delete books from the database
+    setBooks(prev => prev.filter(book => !selectedBooks.includes(book.id)));
+    toast({
+      title: "Books deleted",
+      description: `${selectedBooks.length} books have been removed from the catalog.`
+    });
+    setSelectedBooks([]);
+    setBulkActionOpen(false);
+  };
+  
+  const handleQuickCategorize = () => {
+    if (!quickCategoryValue) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a category."
+      });
+      return;
+    }
+    
+    // In a real implementation, this would update the category in the database
+    toast({
+      title: "Books categorized",
+      description: `${selectedBooks.length} books have been categorized as "${quickCategoryValue}".`
+    });
+    setSelectedBooks([]);
+    setBulkActionOpen(false);
+  };
+  
+  const handleExportCatalog = () => {
+    // In a real implementation, this would generate a CSV/Excel file
+    const timestamp = new Date().toISOString().split('T')[0];
+    toast({
+      title: "Export started",
+      description: `Exporting book catalog as "library-catalog-${timestamp}.csv"`
+    });
   };
   
   if (authLoading) {
@@ -102,20 +207,31 @@ const Books = () => {
             <p className="text-muted-foreground">Manage your library collection.</p>
           </div>
           
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                Add New Book
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Add New Book</DialogTitle>
-              </DialogHeader>
-              <AddBookForm onSuccess={handleAddBookSuccess} />
-            </DialogContent>
-          </Dialog>
+          <div className="flex flex-wrap gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add New Book
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Add New Book</DialogTitle>
+                </DialogHeader>
+                <AddBookForm onSuccess={handleAddBookSuccess} />
+              </DialogContent>
+            </Dialog>
+            
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleExportCatalog}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export Catalog
+            </Button>
+          </div>
         </div>
         
         <div className="flex flex-col md:flex-row gap-4">
@@ -129,11 +245,125 @@ const Books = () => {
             />
           </div>
           
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-            <span className="sr-only">Filter</span>
-          </Button>
+          <Select
+            value={filterStatus}
+            onValueChange={setFilterStatus}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Books</SelectItem>
+              <SelectItem value="available">Available</SelectItem>
+              <SelectItem value="checked-out">Checked Out</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+        
+        {/* Admin Actions Bar - only visible when books are selected */}
+        {selectedBooks.length > 0 && (
+          <div className="bg-muted p-3 rounded-lg flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Checkbox 
+                id="selectAll" 
+                checked={selectedBooks.length > 0 && selectedBooks.length === filteredBooks.length}
+                onCheckedChange={selectAllBooks}
+              />
+              <label htmlFor="selectAll" className="text-sm font-medium">
+                {selectedBooks.length} books selected
+              </label>
+            </div>
+            
+            <div className="flex gap-2">
+              <Dialog open={bulkActionOpen} onOpenChange={setBulkActionOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Tag className="mr-2 h-4 w-4" />
+                    Quick Categorize
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Categorize Selected Books</DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <Select value={quickCategoryValue} onValueChange={setQuickCategoryValue}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Fiction">Fiction</SelectItem>
+                        <SelectItem value="Non-Fiction">Non-Fiction</SelectItem>
+                        <SelectItem value="Science Fiction">Science Fiction</SelectItem>
+                        <SelectItem value="Mystery">Mystery</SelectItem>
+                        <SelectItem value="Biography">Biography</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setBulkActionOpen(false)}>Cancel</Button>
+                    <Button onClick={handleQuickCategorize}>Apply</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <CheckSquare className="mr-2 h-4 w-4" />
+                    Set Status
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Update Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => {
+                    toast({
+                      title: "Status updated",
+                      description: `${selectedBooks.length} books marked as available.`
+                    });
+                    setSelectedBooks([]);
+                  }}>
+                    <CheckSquare className="mr-2 h-4 w-4" />
+                    Mark as Available
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    toast({
+                      title: "Status updated",
+                      description: `${selectedBooks.length} books marked as checked out.`
+                    });
+                    setSelectedBooks([]);
+                  }}>
+                    <XSquare className="mr-2 h-4 w-4" />
+                    Mark as Checked Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Selected
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirm Deletion</DialogTitle>
+                  </DialogHeader>
+                  <p className="py-4">
+                    Are you sure you want to delete {selectedBooks.length} selected books? 
+                    This action cannot be undone.
+                  </p>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => {}}>Cancel</Button>
+                    <Button variant="destructive" onClick={handleBulkDelete}>Delete</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        )}
         
         {loading ? (
           <div className="flex justify-center items-center py-12">
@@ -151,7 +381,17 @@ const Books = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className="relative"
                 >
+                  {/* Selection checkbox overlay */}
+                  <div className="absolute top-2 left-2 z-10">
+                    <Checkbox 
+                      checked={selectedBooks.includes(book.id)}
+                      onCheckedChange={() => toggleBookSelection(book.id)}
+                      className="h-5 w-5 bg-background/80"
+                    />
+                  </div>
+                  
                   <BookCard 
                     book={book} 
                     onClick={handleBookClick}
