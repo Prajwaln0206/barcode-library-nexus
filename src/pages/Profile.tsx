@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserCircle, Mail, Phone, MapPin, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,9 +7,22 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import PageTransition from '@/components/layout/PageTransition';
+import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 
 const Profile = () => {
   const navigate = useNavigate();
+  
+  const [profileData, setProfileData] = useState({
+    name: "Admin User",
+    username: "admin",
+    email: "admin@library.com",
+    phone: "(555) 123-4567",
+    location: "Main Library"
+  });
+
+  const handleProfileUpdate = (values: any) => {
+    setProfileData(values);
+  };
   
   return (
     <PageTransition>
@@ -25,10 +38,10 @@ const Profile = () => {
             </Button>
             <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
           </div>
-          <Button>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Profile
-          </Button>
+          <EditProfileDialog 
+            defaultValues={profileData}
+            onSave={handleProfileUpdate}
+          />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -38,26 +51,26 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="flex flex-col items-center text-center pb-6">
               <Avatar className="h-24 w-24 mb-4">
-                <AvatarFallback className="text-2xl">A</AvatarFallback>
+                <AvatarFallback className="text-2xl">{profileData.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              <h3 className="text-xl font-semibold mb-1">Admin User</h3>
+              <h3 className="text-xl font-semibold mb-1">{profileData.name}</h3>
               <p className="text-muted-foreground mb-4">Library Administrator</p>
               <div className="w-full space-y-3 mt-2">
                 <div className="flex items-center gap-2">
                   <UserCircle className="h-4 w-4 text-muted-foreground" />
-                  <span>admin</span>
+                  <span>{profileData.username}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>admin@library.com</span>
+                  <span>{profileData.email}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>(555) 123-4567</span>
+                  <span>{profileData.phone}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>Main Library</span>
+                  <span>{profileData.location}</span>
                 </div>
               </div>
             </CardContent>
