@@ -42,7 +42,7 @@ const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
             <body>
               <div class="barcode-container">
                 ${title ? `<h2>${title}</h2>` : ''}
-                ${barcodeRef.current.innerHTML}
+                <img src="${generateBarcode(value)}" alt="Barcode: ${value}" />
                 <div class="barcode-value">${value}</div>
               </div>
             </body>
@@ -73,7 +73,11 @@ const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
         className="p-6 bg-white flex items-center justify-center rounded-lg border"
       >
         {value ? (
-          <div dangerouslySetInnerHTML={{ __html: generateBarcode(value) }} />
+          <img 
+            src={generateBarcode(value)} 
+            alt={`Barcode: ${value}`} 
+            className="max-w-full h-auto"
+          />
         ) : (
           <div className="h-16 flex items-center justify-center text-muted-foreground">
             No barcode to display

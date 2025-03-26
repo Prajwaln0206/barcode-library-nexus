@@ -2,9 +2,9 @@
 import JsBarcode from 'jsbarcode';
 
 /**
- * Generates SVG barcode HTML from a given value
+ * Generates a barcode image as a data URL
  * @param value - The value to generate a barcode for
- * @returns SVG HTML string of the barcode
+ * @returns Data URL of the generated barcode image
  */
 export const generateBarcode = (value: string): string => {
   const canvas = document.createElement('canvas');
@@ -27,6 +27,9 @@ export const generateBarcode = (value: string): string => {
 
 /**
  * Generates a unique barcode based on the provided ID and prefix
+ * @param id - The unique identifier to include in the barcode
+ * @param prefix - Optional prefix for the barcode (defaults to 'LIB')
+ * @returns String representation of the generated barcode
  */
 export const generateUniqueBarcode = (id: string, prefix = 'LIB'): string => {
   // Create a barcode with format PREFIX-ID-CHECKSUM
@@ -41,7 +44,9 @@ export const generateUniqueBarcode = (id: string, prefix = 'LIB'): string => {
 };
 
 /**
- * Validates a barcode
+ * Validates a barcode by verifying its checksum
+ * @param barcode - The barcode string to validate
+ * @returns Boolean indicating whether the barcode is valid
  */
 export const validateBarcode = (barcode: string): boolean => {
   const parts = barcode.split('-');
