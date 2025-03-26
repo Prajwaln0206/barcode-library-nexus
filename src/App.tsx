@@ -10,6 +10,9 @@ import Index from "./pages/Index";
 import Books from "./pages/Books";
 import Users from "./pages/Users";
 import Checkout from "./pages/Checkout";
+import Categories from "./pages/Categories";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -35,6 +38,9 @@ const App = () => (
               <Route path="/books" element={<Books />} />
               <Route path="/users" element={<Users />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Route>
