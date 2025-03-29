@@ -23,8 +23,9 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:flex"
+            className="flex"
             onClick={toggleSidebar}
+            aria-label="Toggle sidebar"
           >
             <MoreVertical className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>

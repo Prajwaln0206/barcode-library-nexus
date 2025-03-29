@@ -34,13 +34,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [isOpen, onClose]);
 
+  if (!isOpen) {
+    return null; // Don't render anything if sidebar is closed
+  }
+
   return (
     <aside
       className={cn(
         "w-64 bg-sidebar border-r border-sidebar-border h-full",
         "md:fixed md:inset-y-0 md:left-0 md:z-50",
         "transition-transform duration-300 ease-in-out",
-        isOpen ? "translate-x-0" : "md:translate-x-0",
+        "translate-x-0"
       )}
     >
       <div className="flex flex-col h-full">

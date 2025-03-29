@@ -28,7 +28,7 @@ const Shell: React.FC = () => {
       
       <div className="flex flex-1">
         {/* Desktop sidebar - can be toggled */}
-        <div className={`hidden md:block transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:w-64' : 'md:w-0 overflow-hidden'}`}>
+        <div className={`hidden md:block transition-all duration-300 ease-in-out overflow-hidden ${sidebarOpen ? 'w-64' : 'w-0'}`}>
           <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
         
