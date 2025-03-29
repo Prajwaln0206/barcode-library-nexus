@@ -31,7 +31,7 @@ const Shell: React.FC = () => {
         {/* Desktop sidebar - using Sheet for better slide animation */}
         <div className="hidden md:block">
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-            <SheetContent side="left" className="p-0 w-64" showCloseButton={false}>
+            <SheetContent side="left" className="p-0 w-64" hideCloseButton>
               <Sidebar isOpen={true} onClose={closeSidebar} />
             </SheetContent>
           </Sheet>
