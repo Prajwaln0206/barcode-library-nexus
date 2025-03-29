@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, BookOpen, Users, BarChart2, Settings, LogOut, Library, Bookmark, CheckSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,12 +22,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { path: '/settings', label: 'Settings', icon: <Settings className="h-4 w-4" /> },
   ];
   
+  // Close sidebar on route change in mobile view
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768 && isOpen) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isOpen, onClose]);
+
   return (
     <aside
       className={cn(
         "w-64 bg-sidebar border-r border-sidebar-border h-full",
-        "md:fixed md:inset-y-0 md:left-0 md:z-50 md:translate-x-0",
-        "transition-transform duration-300 ease-in-out"
+        "md:fixed md:inset-y-0 md:left-0 md:z-50",
+        "transition-transform duration-300 ease-in-out",
+        isOpen ? "translate-x-0" : "md:translate-x-0",
       )}
     >
       <div className="flex flex-col h-full">
@@ -54,7 +67,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                   )
                 }
-                onClick={onClose}
+                onClick={() => {
+                  if (window.innerWidth < 768) {
+                    onClose();
+                  }
+                }}
               >
                 {item.icon}
                 {item.label}

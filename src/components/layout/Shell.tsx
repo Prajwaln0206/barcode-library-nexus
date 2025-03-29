@@ -27,9 +27,9 @@ const Shell: React.FC = () => {
       <Navbar toggleSidebar={toggleSidebar} />
       
       <div className="flex flex-1">
-        {/* Desktop sidebar - always visible on larger screens */}
-        <div className="hidden md:block">
-          <Sidebar isOpen={true} onClose={closeSidebar} />
+        {/* Desktop sidebar - can be toggled */}
+        <div className={`hidden md:block transition-all duration-300 ease-in-out ${sidebarOpen ? 'md:w-64' : 'md:w-0 overflow-hidden'}`}>
+          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
         
         {/* Mobile sidebar - using Drawer component */}
@@ -41,7 +41,7 @@ const Shell: React.FC = () => {
           </DrawerContent>
         </Drawer>
         
-        <main className="flex-1 pt-6 px-4 md:px-6 pb-12 md:ml-64 transition-all duration-300">
+        <main className={`flex-1 pt-6 px-4 md:px-6 pb-12 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
           <div className="container max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <Outlet key={location.pathname} />

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Bell, Menu, Plus } from 'lucide-react';
+import { Search, Bell, MoreVertical, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -23,10 +23,10 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden"
+            className="md:flex"
             onClick={toggleSidebar}
           >
-            <Menu className="h-5 w-5" />
+            <MoreVertical className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
           </Button>
           <Link to="/" className="flex items-center gap-2">
