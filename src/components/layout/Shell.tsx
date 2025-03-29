@@ -9,6 +9,7 @@ import {
   DrawerContent,
   DrawerTrigger
 } from "@/components/ui/drawer";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const Shell: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,21 +28,25 @@ const Shell: React.FC = () => {
       <Navbar toggleSidebar={toggleSidebar} />
       
       <div className="flex flex-1">
-        {/* Desktop sidebar - can be toggled */}
-        <div className={`hidden md:block transition-all duration-300 ease-in-out overflow-hidden ${sidebarOpen ? 'w-64' : 'w-0'}`}>
-          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+        {/* Desktop sidebar - using Sheet for better slide animation */}
+        <div className="hidden md:block">
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetContent side="left" className="p-0 w-64" showCloseButton={false}>
+              <Sidebar isOpen={true} onClose={closeSidebar} />
+            </SheetContent>
+          </Sheet>
         </div>
         
         {/* Mobile sidebar - using Drawer component */}
         <Drawer open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <DrawerContent className="p-0 max-h-[90vh]">
             <div className="md:hidden">
-              <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+              <Sidebar isOpen={true} onClose={closeSidebar} />
             </div>
           </DrawerContent>
         </Drawer>
         
-        <main className={`flex-1 pt-6 px-4 md:px-6 pb-12 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
+        <main className="flex-1 pt-6 px-4 md:px-6 pb-12 transition-all duration-300">
           <div className="container max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <Outlet key={location.pathname} />
