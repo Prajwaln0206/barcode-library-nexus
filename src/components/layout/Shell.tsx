@@ -28,13 +28,9 @@ const Shell: React.FC = () => {
       <Navbar toggleSidebar={toggleSidebar} />
       
       <div className="flex flex-1">
-        {/* Desktop sidebar - using Sheet for better slide animation */}
+        {/* Desktop sidebar */}
         <div className="hidden md:block">
-          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-            <SheetContent side="left" className="p-0 w-64" hideCloseButton>
-              <Sidebar isOpen={true} onClose={closeSidebar} />
-            </SheetContent>
-          </Sheet>
+          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         </div>
         
         {/* Mobile sidebar - using Drawer component */}
