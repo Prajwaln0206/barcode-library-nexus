@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Scan, BookOpen, User, ArrowRight, Search, CheckCircle2, Info, Clock } from 'lucide-react';
 import PageTransition from '@/components/layout/PageTransition';
@@ -14,6 +13,7 @@ import { getBookByBarcode, recordBookScan } from '@/services/BookService';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import BarcodeScanner from '@/components/scanner/BarcodeScanner';
 
 type UserInfo = {
   id: string;
@@ -37,14 +37,12 @@ const Checkout = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
   
-  // Fetch users from the database
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -59,11 +57,10 @@ const Checkout = () => {
           name: user.name,
           email: user.email,
           membershipStartDate: new Date(user.membership_start),
-          booksCheckedOut: 0, // We'll calculate this in a separate query
-          status: 'active', // Default status
+          booksCheckedOut: 0,
+          status: 'active',
         }));
         
-        // For each user, count their active loans
         for (const user of formattedUsers) {
           const { count, error } = await supabase
             .from('loans')
@@ -96,9 +93,7 @@ const Checkout = () => {
     setLoading(true);
     
     try {
-      // Check if the barcode is valid
       if (validateBarcode(barcode)) {
-        // Look up the book with this barcode
         const book = await getBookByBarcode(barcode);
         
         if (book) {
@@ -106,7 +101,57 @@ const Checkout = () => {
           setSelectedBook(book);
           setScanResult('success');
           
-          // Record the scan in the logs
+          await recordBookScan(book.id, 'inventory');
+          
+          toast({
+            title: "Book found",
+            description: `Successfully scanned "${book.title}"`,
+          });
+        } else {
+          setScanResult('error');
+          toast({
+            variant: "destructive",
+            title: "Book not found",
+            description: "No book with this barcode exists in the system."
+          });
+        }
+      } else {
+        setScanResult('error');
+        toast({
+          variant: "destructive",
+          title: "Invalid barcode",
+          description: "The barcode format is not valid."
+        });
+      }
+    } catch (error) {
+      console.error('Error scanning barcode:', error);
+      setScanResult('error');
+      toast({
+        variant: "destructive",
+        title: "Scan error",
+        description: "An error occurred while scanning the barcode."
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleBarcodeScan = async (scannedBarcode: string) => {
+    if (loading) return;
+    
+    setBarcode(scannedBarcode);
+    
+    setLoading(true);
+    
+    try {
+      if (validateBarcode(scannedBarcode)) {
+        const book = await getBookByBarcode(scannedBarcode);
+        
+        if (book) {
+          setSelectedBookId(book.id);
+          setSelectedBook(book);
+          setScanResult('success');
+          
           await recordBookScan(book.id, 'inventory');
           
           toast({
@@ -143,8 +188,6 @@ const Checkout = () => {
   };
   
   const handleScanSimulation = async () => {
-    // In a real app, this would use a barcode scanner
-    // For demo, we'll just get a random book from the database
     try {
       setLoading(true);
       
@@ -160,7 +203,6 @@ const Checkout = () => {
         const randomBarcode = data[randomIndex].barcode;
         setBarcode(randomBarcode);
         
-        // Simulate scanning
         setTimeout(async () => {
           const book = await getBookByBarcode(randomBarcode);
           if (book) {
@@ -168,7 +210,6 @@ const Checkout = () => {
             setSelectedBook(book);
             setScanResult('success');
             
-            // Record the scan in the logs
             await recordBookScan(book.id, 'inventory');
             
             toast({
@@ -205,7 +246,6 @@ const Checkout = () => {
     try {
       setLoading(true);
       
-      // Check if book is available for checkout
       if (!selectedBook.isAvailable) {
         toast({
           variant: "destructive",
@@ -215,9 +255,8 @@ const Checkout = () => {
         return;
       }
       
-      // Create a loan record
       const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 14); // 2 weeks loan period
+      dueDate.setDate(dueDate.getDate() + 14);
       
       const { error: loanError } = await supabase
         .from('loans')
@@ -232,7 +271,6 @@ const Checkout = () => {
       
       if (loanError) throw loanError;
       
-      // Update the book status to checked out
       const { error: bookError } = await supabase
         .from('books')
         .update({ status: 'checked_out' })
@@ -240,7 +278,6 @@ const Checkout = () => {
       
       if (bookError) throw bookError;
       
-      // Record the checkout scan
       await recordBookScan(selectedBook.id, 'checkout');
       
       toast({
@@ -248,7 +285,6 @@ const Checkout = () => {
         description: `"${selectedBook.title}" has been checked out to ${selectedUser?.name}.`,
       });
       
-      // Reset the form
       setBarcode('');
       setSelectedBookId('');
       setSelectedUserId('');
@@ -272,7 +308,6 @@ const Checkout = () => {
     try {
       setLoading(true);
       
-      // Check if book is already available (not checked out)
       if (selectedBook.isAvailable) {
         toast({
           variant: "destructive",
@@ -282,7 +317,6 @@ const Checkout = () => {
         return;
       }
       
-      // Find the active loan for this book
       const { data: loans, error: loanFetchError } = await supabase
         .from('loans')
         .select('*')
@@ -301,7 +335,6 @@ const Checkout = () => {
         return;
       }
       
-      // Update the loan status to 'returned'
       const { error: loanUpdateError } = await supabase
         .from('loans')
         .update({ 
@@ -312,7 +345,6 @@ const Checkout = () => {
       
       if (loanUpdateError) throw loanUpdateError;
       
-      // Update the book status to available
       const { error: bookError } = await supabase
         .from('books')
         .update({ status: 'available' })
@@ -320,7 +352,6 @@ const Checkout = () => {
       
       if (bookError) throw bookError;
       
-      // Record the return scan
       await recordBookScan(selectedBook.id, 'return');
       
       toast({
@@ -328,7 +359,6 @@ const Checkout = () => {
         description: `"${selectedBook.title}" has been returned.`,
       });
       
-      // Reset the form
       setBarcode('');
       setSelectedBookId('');
       setSelectedBook(null);
@@ -359,7 +389,7 @@ const Checkout = () => {
   }
   
   if (!user) {
-    return null; // This will redirect to auth page due to the useEffect
+    return null;
   }
   
   return (
@@ -378,7 +408,6 @@ const Checkout = () => {
           
           <TabsContent value="checkout" className="space-y-6 mt-6">
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Left column - Barcode scanner */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -386,53 +415,70 @@ const Checkout = () => {
                     Scan Book
                   </CardTitle>
                   <CardDescription>
-                    Scan a book's barcode or enter it manually
+                    Use a barcode scanner or enter barcode manually
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleBarcodeSubmit} className="space-y-4">
-                    <div>
-                      <div className="flex space-x-2">
-                        <Input
-                          placeholder="Enter barcode..."
-                          value={barcode}
-                          onChange={(e) => setBarcode(e.target.value)}
-                          className="flex-1"
-                          disabled={loading}
-                        />
-                        <Button type="submit" disabled={loading}>Lookup</Button>
+                  <div className="space-y-4">
+                    <BarcodeScanner 
+                      onScan={handleBarcodeScan}
+                      enabled={!loading}
+                    />
+                    
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
                       </div>
-                      
-                      <div className="mt-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleScanSimulation}
-                          className="w-full"
-                          disabled={loading}
-                        >
-                          <Scan className="mr-2 h-4 w-4" />
-                          Simulate Scan
-                        </Button>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                          or enter manually
+                        </span>
                       </div>
-                      
-                      {scanResult === 'error' && (
-                        <p className="text-sm text-destructive mt-2">
-                          Invalid barcode or book not found.
-                        </p>
-                      )}
                     </div>
                     
-                    {barcode && (
-                      <div className="pt-2">
-                        <BarcodeGenerator value={barcode} />
+                    <form onSubmit={handleBarcodeSubmit} className="space-y-4">
+                      <div>
+                        <div className="flex space-x-2">
+                          <Input
+                            placeholder="Enter barcode..."
+                            value={barcode}
+                            onChange={(e) => setBarcode(e.target.value)}
+                            className="flex-1"
+                            disabled={loading}
+                          />
+                          <Button type="submit" disabled={loading}>Lookup</Button>
+                        </div>
+                        
+                        <div className="mt-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleScanSimulation}
+                            className="w-full"
+                            disabled={loading}
+                          >
+                            <Scan className="mr-2 h-4 w-4" />
+                            Simulate Scan
+                          </Button>
+                        </div>
+                        
+                        {scanResult === 'error' && (
+                          <p className="text-sm text-destructive mt-2">
+                            Invalid barcode or book not found.
+                          </p>
+                        )}
                       </div>
-                    )}
-                  </form>
+                      
+                      {barcode && (
+                        <div className="pt-2">
+                          <BarcodeGenerator value={barcode} />
+                        </div>
+                      )}
+                    </form>
+                  </div>
                 </CardContent>
               </Card>
               
-              {/* Right column - Book details */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -492,7 +538,6 @@ const Checkout = () => {
               </Card>
             </div>
             
-            {/* User selection and checkout */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -581,6 +626,22 @@ const Checkout = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  <BarcodeScanner 
+                    onScan={handleBarcodeScan}
+                    enabled={!loading}
+                  />
+                  
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        or enter manually
+                      </span>
+                    </div>
+                  </div>
+                  
                   <div className="flex space-x-2">
                     <Input
                       placeholder="Enter barcode..."

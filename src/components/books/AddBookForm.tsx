@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BookOpen, Tag, Bookmark, MapPin, QrCode, Image, Save } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { BookCreate, addBook } from '@/services/BookService';
 import BarcodeGenerator from './BarcodeGenerator';
+import BarcodeScanner from '@/components/scanner/BarcodeScanner';
 
 interface AddBookFormProps {
   onSuccess?: (barcode: string) => void;
@@ -36,7 +36,6 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ onSuccess }) => {
     setLoading(true);
     
     try {
-      // Validate required fields
       if (!book.title || !book.author) {
         throw new Error("Title and author are required");
       }
@@ -64,6 +63,23 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ onSuccess }) => {
     }
   };
 
+  const handleBarcodeScan = (scannedBarcode: string) => {
+    if (scannedBarcode.length >= 10) {
+      setBook(prev => ({ ...prev, isbn: scannedBarcode }));
+      
+      toast({
+        title: "ISBN Scanned",
+        description: `ISBN ${scannedBarcode} has been added to the form`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Invalid ISBN format",
+        description: "The scanned barcode doesn't appear to be a valid ISBN format.",
+      });
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -71,6 +87,14 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ onSuccess }) => {
       </CardHeader>
       
       <CardContent>
+        <div className="mb-4">
+          <BarcodeScanner 
+            onScan={handleBarcodeScan}
+            enabled={!loading}
+          />
+          <p className="text-xs text-muted-foreground mt-1">Scan an ISBN barcode from a book to automatically fill the ISBN field</p>
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Title (required)</Label>
