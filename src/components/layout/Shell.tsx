@@ -7,9 +7,7 @@ import Sidebar from './Sidebar';
 import { 
   Drawer,
   DrawerContent,
-  DrawerTrigger
 } from "@/components/ui/drawer";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const Shell: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings as SettingsIcon, Save, Bell, Mail, Clock, User, Shield, Palette, Moon, Sun, Database, CreditCard } from 'lucide-react';
 import PageTransition from '@/components/layout/PageTransition';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 const Settings = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("general");
+  const [isSaving, setIsSaving] = useState(false);
   
   // General settings
   const [libraryName, setLibraryName] = useState("Main City Library");
@@ -25,6 +26,7 @@ const Settings = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [overdueReminders, setOverdueReminders] = useState(true);
   const [newArrivalsNotifications, setNewArrivalsNotifications] = useState(false);
+  const [customMessage, setCustomMessage] = useState("");
   
   // Appearance settings
   const [darkMode, setDarkMode] = useState(false);
@@ -33,13 +35,114 @@ const Settings = () => {
   
   // API settings
   const [apiKey, setApiKey] = useState("sk_test_library_4f3g2h1j5k");
+
+  // Apply appearance settings
+  useEffect(() => {
+    // Apply dark mode
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Apply high contrast mode
+    if (highContrastMode) {
+      document.documentElement.classList.add('high-contrast');
+    } else {
+      document.documentElement.classList.remove('high-contrast');
+    }
+    
+    // Apply large text
+    if (largeText) {
+      document.documentElement.classList.add('large-text');
+      document.documentElement.style.fontSize = '1.2rem';
+    } else {
+      document.documentElement.classList.remove('large-text');
+      document.documentElement.style.fontSize = '';
+    }
+  }, [darkMode, highContrastMode, largeText]);
   
   const saveSettings = () => {
-    toast({
-      title: "Settings saved",
-      description: "Your settings have been successfully updated.",
-    });
+    setIsSaving(true);
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      // In a real app, this would be an API call to save settings
+      setIsSaving(false);
+      
+      toast({
+        title: "Settings saved",
+        description: "Your settings have been successfully updated.",
+      });
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('librarySettings', JSON.stringify({
+        general: {
+          libraryName,
+          contactEmail,
+          maxCheckoutDays,
+          maxCheckoutBooks
+        },
+        notifications: {
+          emailNotifications,
+          overdueReminders,
+          newArrivalsNotifications,
+          customMessage
+        },
+        appearance: {
+          darkMode,
+          highContrastMode,
+          largeText
+        },
+        advanced: {
+          apiKey
+        }
+      }));
+    }, 800);
   };
+  
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('librarySettings');
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        
+        // Apply general settings
+        if (settings.general) {
+          setLibraryName(settings.general.libraryName || "Main City Library");
+          setContactEmail(settings.general.contactEmail || "library@example.com");
+          setMaxCheckoutDays(settings.general.maxCheckoutDays || "14");
+          setMaxCheckoutBooks(settings.general.maxCheckoutBooks || "5");
+        }
+        
+        // Apply notification settings
+        if (settings.notifications) {
+          setEmailNotifications(settings.notifications.emailNotifications !== undefined ? 
+            settings.notifications.emailNotifications : true);
+          setOverdueReminders(settings.notifications.overdueReminders !== undefined ? 
+            settings.notifications.overdueReminders : true);
+          setNewArrivalsNotifications(settings.notifications.newArrivalsNotifications !== undefined ? 
+            settings.notifications.newArrivalsNotifications : false);
+          setCustomMessage(settings.notifications.customMessage || "");
+        }
+        
+        // Apply appearance settings
+        if (settings.appearance) {
+          setDarkMode(settings.appearance.darkMode || false);
+          setHighContrastMode(settings.appearance.highContrastMode || false);
+          setLargeText(settings.appearance.largeText || false);
+        }
+        
+        // Apply advanced settings
+        if (settings.advanced) {
+          setApiKey(settings.advanced.apiKey || "sk_test_library_4f3g2h1j5k");
+        }
+      } catch (error) {
+        console.error("Error loading settings:", error);
+      }
+    }
+  }, []);
   
   const regenerateApiKey = () => {
     // Generate a random string for demonstration
@@ -120,9 +223,15 @@ const Settings = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button onClick={saveSettings}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                <Button onClick={saveSettings} disabled={isSaving}>
+                  {isSaving ? (
+                    <>Saving...</>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -177,13 +286,21 @@ const Settings = () => {
                     id="custom-message" 
                     placeholder="Enter a custom message to include with notifications"
                     className="min-h-[100px]"
+                    value={customMessage}
+                    onChange={(e) => setCustomMessage(e.target.value)}
                   />
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button onClick={saveSettings}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                <Button onClick={saveSettings} disabled={isSaving}>
+                  {isSaving ? (
+                    <>Saving...</>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -233,9 +350,15 @@ const Settings = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button onClick={saveSettings}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                <Button onClick={saveSettings} disabled={isSaving}>
+                  {isSaving ? (
+                    <>Saving...</>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
@@ -298,10 +421,26 @@ const Settings = () => {
                 <div className="space-y-2 pt-4">
                   <Label>Backup Settings</Label>
                   <div className="flex gap-4">
-                    <Button variant="outline">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        toast({
+                          title: "Export Started",
+                          description: "Your data export has been initiated. You'll be notified when it's ready.",
+                        });
+                      }}
+                    >
                       Export Data
                     </Button>
-                    <Button variant="outline">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        toast({
+                          title: "Import Dialog",
+                          description: "This would open a file selection dialog in a real application.",
+                        });
+                      }}
+                    >
                       Import Data
                     </Button>
                   </div>
@@ -318,22 +457,42 @@ const Settings = () => {
                         <Label>Two-Factor Authentication</Label>
                         <p className="text-sm text-muted-foreground">Require 2FA for admins</p>
                       </div>
-                      <Switch />
+                      <Switch 
+                        onChange={(checked) => {
+                          toast({
+                            title: checked ? "2FA Enabled" : "2FA Disabled",
+                            description: checked ? "Two-factor authentication is now required for admins." : "Two-factor authentication is now optional.",
+                          });
+                        }}
+                      />
                     </div>
                     <div className="flex items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <Label>Session Timeout</Label>
                         <p className="text-sm text-muted-foreground">Automatically log out after inactivity</p>
                       </div>
-                      <Switch defaultChecked />
+                      <Switch defaultChecked 
+                        onChange={(checked) => {
+                          toast({
+                            title: checked ? "Session Timeout Enabled" : "Session Timeout Disabled",
+                            description: checked ? "Users will be logged out after a period of inactivity." : "Users will stay logged in indefinitely.",
+                          });
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button onClick={saveSettings}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                <Button onClick={saveSettings} disabled={isSaving}>
+                  {isSaving ? (
+                    <>Saving...</>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
