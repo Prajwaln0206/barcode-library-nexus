@@ -1,12 +1,11 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Scan } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BarcodeScanner from '@/components/scanner/BarcodeScanner';
 import { BookInfo } from '@/components/books/BookCard';
 import BarcodeForm from './BarcodeForm';
-import { useBarcodeProcessor } from './BarcodeProcessor';
-import { useScanSimulator } from './ScanSimulator';
+import { useBookScanner } from '@/hooks/useBookScanner';
 
 interface BookScannerProps {
   onBookScanned: (book: BookInfo) => void;
@@ -19,33 +18,18 @@ const BookScanner: React.FC<BookScannerProps> = ({
   loading,
   setLoading
 }) => {
-  const [barcode, setBarcode] = useState('');
-  const [scanResult, setScanResult] = useState<'success' | 'error' | null>(null);
-  
-  const { processBarcode } = useBarcodeProcessor({
-    onBookScanned,
-    setLoading,
-    setScanResult
-  });
-  
-  const { simulateScan } = useScanSimulator({
+  const {
+    barcode,
     setBarcode,
-    setLoading,
+    scanResult,
+    handleBarcodeSubmit,
+    handleBarcodeScan,
+    simulateScan
+  } = useBookScanner({
     onBookScanned,
-    setScanResult
+    loading,
+    setLoading
   });
-  
-  const handleBarcodeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await processBarcode(barcode);
-  };
-  
-  const handleBarcodeScan = async (scannedBarcode: string) => {
-    if (loading) return;
-    
-    setBarcode(scannedBarcode);
-    await processBarcode(scannedBarcode);
-  };
   
   return (
     <Card>
@@ -91,3 +75,4 @@ const BookScanner: React.FC<BookScannerProps> = ({
 };
 
 export default BookScanner;
+
