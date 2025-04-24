@@ -1,15 +1,16 @@
 
 import React, { useState } from 'react';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageTransition from '@/components/layout/PageTransition';
 import UserCard, { UserInfo } from '@/components/users/UserCard';
+import AddUserDialog from '@/components/users/AddUserDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { mockUsers } from '@/lib/data';
 
 const Users = () => {
-  const [users] = useState<UserInfo[]>(mockUsers);
+  const [users, setUsers] = useState<UserInfo[]>(mockUsers);
   const [searchQuery, setSearchQuery] = useState('');
   
   const filteredUsers = users.filter(user => 
@@ -22,6 +23,20 @@ const Users = () => {
     // In a real app, this would open a detailed view or a modal
   };
   
+  // Add a new user to the list
+  const handleUserAdded = (userData: { name: string, email: string }) => {
+    const newUser: UserInfo = {
+      id: `user_${Math.random().toString(36).substr(2, 9)}`,
+      name: userData.name,
+      email: userData.email,
+      membershipStartDate: new Date(),
+      booksCheckedOut: 0,
+      status: 'active',
+    };
+    
+    setUsers(prevUsers => [newUser, ...prevUsers]);
+  };
+  
   return (
     <PageTransition>
       <div className="space-y-8">
@@ -31,10 +46,7 @@ const Users = () => {
             <p className="text-muted-foreground">Manage library members.</p>
           </div>
           
-          <Button size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            Add New User
-          </Button>
+          <AddUserDialog onUserAdded={handleUserAdded} />
         </div>
         
         <div className="flex flex-col md:flex-row gap-4">
