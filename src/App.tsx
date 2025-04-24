@@ -12,10 +12,8 @@ import Users from "./pages/Users";
 import Checkout from "./pages/Checkout";
 import Categories from "./pages/Categories";
 import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
 
 // Layout
 import Shell from "./components/layout/Shell";
@@ -40,8 +38,6 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/reports" element={<Reports />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Route>
             <Route path="/auth" element={<Auth />} />
