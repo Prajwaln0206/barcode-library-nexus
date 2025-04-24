@@ -1,7 +1,6 @@
-
 import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, BookOpen, Users, BarChart2, Settings, LogOut, Library, Bookmark, CheckSquare } from 'lucide-react';
+import { Home, BookOpen, Users, BarChart2, Library, Bookmark, CheckSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,10 +18,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { path: '/checkout', label: 'Checkout', icon: <CheckSquare className="h-4 w-4" /> },
     { path: '/categories', label: 'Categories', icon: <Bookmark className="h-4 w-4" /> },
     { path: '/reports', label: 'Reports', icon: <BarChart2 className="h-4 w-4" /> },
-    { path: '/settings', label: 'Settings', icon: <Settings className="h-4 w-4" /> },
   ];
   
-  // Close sidebar on route change in mobile view
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768 && isOpen) {
@@ -80,7 +77,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         
         <div className="border-t border-sidebar-border/50 p-4">
           <Button variant="outline" size="sm" className="w-full justify-start text-sidebar-foreground">
-            <LogOut className="mr-2 h-4 w-4" />
             Log out
           </Button>
         </div>
