@@ -10,6 +10,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+// Define the list of authorized users - same as in AuthContext
+const AUTHORIZED_USERS = [
+  "admin@ngo-library.com",
+  "librarian@ngo-library.com"
+];
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -20,14 +27,14 @@ const Auth = () => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthorized } = useAuth();
   
   useEffect(() => {
-    // If user is already logged in, redirect to home page
-    if (user) {
+    // If user is already logged in and authorized, redirect to home page
+    if (user && isAuthorized) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, isAuthorized, navigate]);
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +44,16 @@ const Auth = () => {
         variant: "destructive",
         title: "Missing information",
         description: "Please enter both email and password."
+      });
+      return;
+    }
+    
+    // Verify if the email is in the authorized list
+    if (!AUTHORIZED_USERS.includes(email)) {
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "You are not authorized to access this system."
       });
       return;
     }
@@ -51,27 +68,12 @@ const Auth = () => {
       
       if (error) throw error;
       
-      // Verify if the user is an authorized user
-      const { data: authorizedData, error: authorizedError } = await supabase
-        .from('authorized_users')
-        .select('*')
-        .eq('id', data.user.id);
-      
-      if (authorizedError) {
-        console.error("Error checking authorized users:", authorizedError);
-      }
-      
-      if (!authorizedData || authorizedData.length === 0) {
-        await supabase.auth.signOut();
-        throw new Error("You are not authorized to access this system.");
-      }
-      
       toast({
         title: "Login successful",
         description: "Welcome back!"
       });
       
-      navigate('/');
+      // The AuthContext will handle the redirection if the user is authorized
       
     } catch (error) {
       console.error("Login error:", error);
@@ -97,6 +99,16 @@ const Auth = () => {
       return;
     }
     
+    // Verify if the email is in the authorized list
+    if (!AUTHORIZED_USERS.includes(email)) {
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "Only specific email addresses are allowed to register."
+      });
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -107,47 +119,12 @@ const Auth = () => {
       
       if (error) throw error;
       
-      // Check if there are any existing authorized users
-      const { count, error: countError } = await supabase
-        .from('authorized_users')
-        .select('*', { count: 'exact', head: true });
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully. You can now log in."
+      });
       
-      if (countError) {
-        console.error("Error checking authorized users count:", countError);
-      }
-      
-      // If this is the first user, automatically make them an admin
-      if (count === 0) {
-        const { error: insertError } = await supabase
-          .from('authorized_users')
-          .insert({
-            id: data.user!.id,
-            email: email,
-            role: 'admin'
-          });
-        
-        if (insertError) {
-          console.error("Error creating admin user:", insertError);
-          throw new Error("Failed to create admin user.");
-        }
-        
-        toast({
-          title: "Admin account created",
-          description: "You have been registered as the first admin of the system."
-        });
-        
-        // No need to explicitly navigate as the auth state change will redirect
-      } else {
-        // For subsequent users, they need to be approved by an admin
-        toast({
-          variant: "default",
-          title: "Registration request submitted",
-          description: "Your request has been submitted. Please contact an administrator for access approval."
-        });
-        
-        // Sign out since they need approval
-        await supabase.auth.signOut();
-      }
+      setActiveTab('login');
       
     } catch (error) {
       console.error("Signup error:", error);
@@ -180,6 +157,14 @@ const Auth = () => {
               {activeTab === 'login' ? 'Sign in to your account' : 'Create a new account'}
             </CardDescription>
           </CardHeader>
+          
+          <Alert className="mx-6 mb-4">
+            <AlertDescription className="text-sm">
+              This system is restricted to authorized personnel only.
+              <br />
+              Authorized emails: {AUTHORIZED_USERS.join(", ")}
+            </AlertDescription>
+          </Alert>
           
           <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid grid-cols-2 w-full">
@@ -307,11 +292,6 @@ const Auth = () => {
                       </Button>
                     </div>
                   </div>
-                  
-                  <p className="text-muted-foreground text-sm">
-                    The first user to register will automatically be granted admin access.
-                    Subsequent users will need approval from an admin.
-                  </p>
                 </CardContent>
                 
                 <CardFooter>
