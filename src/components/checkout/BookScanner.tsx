@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Scan } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Scan } from 'lucide-react';
 import BarcodeScanner from '@/components/scanner/BarcodeScanner';
 import { BookInfo } from '@/components/books/BookCard';
 import BarcodeForm from './BarcodeForm';
@@ -23,8 +23,7 @@ const BookScanner: React.FC<BookScannerProps> = ({
     setBarcode,
     scanResult,
     handleBarcodeSubmit,
-    handleBarcodeScan,
-    simulateScan
+    handleBarcodeScan
   } = useBookScanner({
     onBookScanned,
     loading,
@@ -64,7 +63,6 @@ const BookScanner: React.FC<BookScannerProps> = ({
             barcode={barcode}
             setBarcode={setBarcode}
             onSubmit={handleBarcodeSubmit}
-            onSimulateScan={simulateScan}
             loading={loading}
             scanResult={scanResult}
           />
@@ -75,4 +73,3 @@ const BookScanner: React.FC<BookScannerProps> = ({
 };
 
 export default BookScanner;
-

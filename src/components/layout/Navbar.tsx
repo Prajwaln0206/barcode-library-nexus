@@ -1,21 +1,18 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Plus } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavbarProps {
   toggleSidebar: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
+  const { signOut } = useAuth();
+
   return (
     <header className="w-full border-b border-border/40 bg-background/95 backdrop-blur-md sticky top-0 z-40">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
@@ -39,34 +36,14 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
           <div className="relative flex-1 max-w-md">
             <Input
               type="search"
-              placeholder="Search books, users, or barcodes..."
+              placeholder="Search books by title, author, or barcode..."
               className="pl-4 bg-background/50 border-border/50 focus-visible:ring-1"
             />
           </div>
         </div>
         
         <div className="flex items-center gap-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" className="hidden md:flex">
-                <Plus className="mr-2 h-4 w-4" />
-                Add New
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to="/books">Add New Book</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/users">Add New User</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/checkout">New Checkout</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => signOut()}>
             Sign Out
           </Button>
         </div>

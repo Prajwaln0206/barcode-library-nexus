@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Users, CheckSquare } from 'lucide-react';
@@ -6,7 +5,6 @@ import { motion } from 'framer-motion';
 import PageTransition from '@/components/layout/PageTransition';
 import StatCard from '@/components/dashboard/StatCard';
 import RecentActivity from '@/components/dashboard/RecentActivity';
-import { dashboardStats, mockActivities } from '@/lib/data';
 
 const staggerDelay = 0.1;
 
@@ -15,8 +13,8 @@ const Index = () => {
     <PageTransition>
       <div className="space-y-8">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Library Management System</h1>
-          <p className="text-muted-foreground">Welcome to the NGO Library Management Portal</p>
+          <h1 className="text-3xl font-bold tracking-tight">NGO Library Management System</h1>
+          <p className="text-muted-foreground">Manage your library resources efficiently</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -72,7 +70,7 @@ const Index = () => {
           >
             <div className="glass-card rounded-xl p-6">
               <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-              <RecentActivity activities={mockActivities} />
+              <RecentActivity activities={[]} />
             </div>
           </motion.div>
           
@@ -93,17 +91,6 @@ const Index = () => {
                     Manage Books
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">Add or manage library books</p>
-                </Link>
-                
-                <Link 
-                  to="/users" 
-                  className="block p-4 rounded-lg bg-accent hover:bg-accent/80 transition-colors"
-                >
-                  <h3 className="font-medium flex items-center">
-                    <Users className="h-4 w-4 mr-2" />
-                    Manage Users
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1">Handle user memberships</p>
                 </Link>
                 
                 <Link 
