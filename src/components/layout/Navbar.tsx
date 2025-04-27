@@ -43,7 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
         </div>
         
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => signOut()}>
+          <Button variant="outline" size="sm" onClick={signOut}>
             Sign Out
           </Button>
         </div>
