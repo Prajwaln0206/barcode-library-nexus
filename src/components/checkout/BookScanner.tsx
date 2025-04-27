@@ -22,6 +22,7 @@ const BookScanner: React.FC<BookScannerProps> = ({
     barcode,
     setBarcode,
     scanResult,
+    errorMessage,
     handleBarcodeSubmit,
     handleBarcodeScan
   } = useBookScanner({
@@ -65,6 +66,7 @@ const BookScanner: React.FC<BookScannerProps> = ({
             onSubmit={handleBarcodeSubmit}
             loading={loading}
             scanResult={scanResult}
+            errorMessage={errorMessage}
           />
         </div>
       </CardContent>

@@ -52,9 +52,19 @@ export const validateBarcode = (barcode: string): boolean => {
   const parts = barcode.split('-');
   
   // Ensure we have the prefix, id, and checksum parts
-  if (parts.length !== 3) return false;
+  if (parts.length !== 3) {
+    console.log('Barcode validation failed: incorrect number of parts', parts.length);
+    return false;
+  }
   
   const [prefix, id, checksumStr] = parts;
+  
+  // Validate checksum is a number
+  if (!/^\d+$/.test(checksumStr)) {
+    console.log('Barcode validation failed: checksum is not a number', checksumStr);
+    return false;
+  }
+  
   const checksum = parseInt(checksumStr, 10);
   
   // Recalculate the checksum
@@ -63,5 +73,11 @@ export const validateBarcode = (barcode: string): boolean => {
     .split('')
     .reduce((sum, char) => sum + char.charCodeAt(0), 0) % 97;
   
-  return checksum === expectedChecksum;
+  const isValid = checksum === expectedChecksum;
+  
+  if (!isValid) {
+    console.log(`Barcode validation failed: expected checksum ${expectedChecksum}, got ${checksum}`);
+  }
+  
+  return isValid;
 };

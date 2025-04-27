@@ -8,12 +8,14 @@ interface UseBarcodeProcessorProps {
   onBookScanned: (book: BookInfo) => void;
   setLoading: (loading: boolean) => void;
   setScanResult: (result: 'success' | 'error' | null) => void;
+  setErrorMessage?: (message: string) => void;
 }
 
 export const useBarcodeProcessor = ({
   onBookScanned,
   setLoading,
-  setScanResult
+  setScanResult,
+  setErrorMessage = () => {}
 }: UseBarcodeProcessorProps) => {
   const { toast } = useToast();
 
@@ -23,12 +25,25 @@ export const useBarcodeProcessor = ({
     setLoading(true);
     
     try {
+      // First check if the barcode has the expected format
+      if (!barcode.includes('-') || barcode.split('-').length !== 3) {
+        setScanResult('error');
+        setErrorMessage('Invalid barcode format. Expected format: PREFIX-ID-CHECKSUM');
+        toast({
+          variant: "destructive",
+          title: "Invalid barcode format",
+          description: "The barcode must be in the format: PREFIX-ID-CHECKSUM"
+        });
+        return;
+      }
+      
       if (validateBarcode(barcode)) {
         const book = await getBookByBarcode(barcode);
         
         if (book) {
           onBookScanned(book);
           setScanResult('success');
+          setErrorMessage('');
           
           toast({
             title: "Book found",
@@ -36,6 +51,7 @@ export const useBarcodeProcessor = ({
           });
         } else {
           setScanResult('error');
+          setErrorMessage('No book with this barcode exists in the system');
           toast({
             variant: "destructive",
             title: "Book not found",
@@ -44,6 +60,7 @@ export const useBarcodeProcessor = ({
         }
       } else {
         setScanResult('error');
+        setErrorMessage('The barcode format is not valid');
         toast({
           variant: "destructive",
           title: "Invalid barcode",
@@ -53,6 +70,7 @@ export const useBarcodeProcessor = ({
     } catch (error) {
       console.error('Error scanning barcode:', error);
       setScanResult('error');
+      setErrorMessage('An error occurred while scanning the barcode');
       toast({
         variant: "destructive",
         title: "Scan error",

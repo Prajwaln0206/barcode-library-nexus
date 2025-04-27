@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import BarcodeGenerator from '@/components/books/BarcodeGenerator';
+import { AlertCircle } from 'lucide-react';
 
 interface BarcodeFormProps {
   barcode: string;
@@ -10,6 +11,7 @@ interface BarcodeFormProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;
   loading: boolean;
   scanResult: 'success' | 'error' | null;
+  errorMessage?: string;
 }
 
 const BarcodeForm: React.FC<BarcodeFormProps> = ({
@@ -17,14 +19,15 @@ const BarcodeForm: React.FC<BarcodeFormProps> = ({
   setBarcode,
   onSubmit,
   loading,
-  scanResult
+  scanResult,
+  errorMessage = 'Invalid barcode or book not found.'
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
         <div className="flex space-x-2">
           <Input
-            placeholder="Enter barcode..."
+            placeholder="Enter barcode... (e.g. LIB-123456-42)"
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
             className="flex-1"
@@ -34,9 +37,10 @@ const BarcodeForm: React.FC<BarcodeFormProps> = ({
         </div>
         
         {scanResult === 'error' && (
-          <p className="text-sm text-destructive mt-2">
-            Invalid barcode or book not found.
-          </p>
+          <div className="flex items-center text-sm text-destructive mt-2">
+            <AlertCircle className="h-4 w-4 mr-1" />
+            <p>{errorMessage}</p>
+          </div>
         )}
       </div>
       

@@ -17,11 +17,13 @@ export const useBookScanner = ({
 }: UseBookScannerProps) => {
   const [barcode, setBarcode] = useState('');
   const [scanResult, setScanResult] = useState<'success' | 'error' | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   
   const { processBarcode } = useBarcodeProcessor({
     onBookScanned,
     setLoading,
-    setScanResult
+    setScanResult,
+    setErrorMessage
   });
   
   const { simulateScan } = useScanSimulator({
@@ -47,9 +49,9 @@ export const useBookScanner = ({
     barcode,
     setBarcode,
     scanResult,
+    errorMessage,
     handleBarcodeSubmit,
     handleBarcodeScan,
     simulateScan
   };
 };
-
