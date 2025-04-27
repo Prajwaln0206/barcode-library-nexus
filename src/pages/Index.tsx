@@ -5,8 +5,7 @@ import { BookOpen, Users, CheckSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageTransition from '@/components/layout/PageTransition';
 import StatCard from '@/components/dashboard/StatCard';
-import RecentActivity from '@/components/dashboard/RecentActivity';
-import { mockActivities, dashboardStats } from '@/lib/data';
+import { dashboardStats } from '@/lib/data';
 
 const staggerDelay = 0.1;
 
@@ -64,18 +63,6 @@ const Index = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div 
-            className="lg:col-span-2"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: staggerDelay * 3 }}
-          >
-            <div className="glass-card rounded-xl p-6">
-              <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-              <RecentActivity activities={mockActivities} />
-            </div>
-          </motion.div>
-          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

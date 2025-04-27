@@ -1,8 +1,8 @@
+
 import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, BookOpen, Users, BarChart2, Library, Bookmark, CheckSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SidebarProps {
@@ -74,12 +74,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             ))}
           </nav>
         </ScrollArea>
-        
-        <div className="border-t border-sidebar-border/50 p-4">
-          <Button variant="outline" size="sm" className="w-full justify-start text-sidebar-foreground">
-            Log out
-          </Button>
-        </div>
       </div>
     </aside>
   );
