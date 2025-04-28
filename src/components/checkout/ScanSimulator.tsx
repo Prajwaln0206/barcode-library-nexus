@@ -22,6 +22,7 @@ export const useScanSimulator = ({
   const simulateScan = async () => {
     try {
       setLoading(true);
+      setScanResult(null);
       
       const { data, error } = await supabase
         .from('books')
@@ -31,23 +32,50 @@ export const useScanSimulator = ({
       if (error) throw error;
       
       if (data && data.length > 0) {
-        const randomIndex = Math.floor(Math.random() * data.length);
-        const randomBarcode = data[randomIndex].barcode;
-        setBarcode(randomBarcode);
+        // Find a book with a valid barcode
+        const validBooks = data.filter(book => book.barcode && book.barcode.includes('-'));
         
-        setTimeout(async () => {
-          const book = await getBookByBarcode(randomBarcode);
-          if (book) {
-            onBookScanned(book);
-            setScanResult('success');
-            
-            toast({
-              title: "Book found",
-              description: `Successfully scanned "${book.title}"`,
-            });
-          }
+        if (validBooks.length > 0) {
+          const randomIndex = Math.floor(Math.random() * validBooks.length);
+          const randomBarcode = validBooks[randomIndex].barcode;
+          setBarcode(randomBarcode);
+          
+          toast({
+            title: "Simulating scan",
+            description: `Testing with barcode: ${randomBarcode}`,
+          });
+          
+          setTimeout(async () => {
+            try {
+              const book = await getBookByBarcode(randomBarcode);
+              if (book) {
+                onBookScanned(book);
+                setScanResult('success');
+                
+                toast({
+                  title: "Book found",
+                  description: `Successfully scanned "${book.title}"`,
+                });
+              }
+            } catch (error) {
+              console.error('Error fetching book:', error);
+              setScanResult('error');
+              toast({
+                variant: "destructive",
+                title: "Scan simulation error",
+                description: "Failed to fetch book data."
+              });
+            }
+            setLoading(false);
+          }, 800);
+        } else {
+          toast({
+            variant: "destructive",
+            title: "No valid books found",
+            description: "There are no books with valid barcodes in the database."
+          });
           setLoading(false);
-        }, 800);
+        }
       } else {
         toast({
           variant: "destructive",

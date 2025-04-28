@@ -12,12 +12,14 @@ const Checkout = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   
+  // Redirect to auth page if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
   
+  // Show loading state while authentication is being checked
   if (authLoading) {
     return (
       <PageTransition>
@@ -26,6 +28,7 @@ const Checkout = () => {
     );
   }
   
+  // Don't render anything if not logged in (will redirect)
   if (!user) {
     return null;
   }

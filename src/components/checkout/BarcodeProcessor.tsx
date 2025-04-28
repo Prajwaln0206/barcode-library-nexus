@@ -26,16 +26,33 @@ export const useBarcodeProcessor = ({
     setScanResult(null);
     
     try {
-      // First check if the barcode has the expected format
-      if (!barcode.includes('-') || barcode.split('-').length !== 3) {
+      // First check if the barcode has at least prefix-id-checksum structure
+      const parts = barcode.split('-');
+      if (parts.length < 3) {
         setScanResult('error');
-        const errorMsg = 'Invalid barcode format. Expected format: PREFIX-ID-CHECKSUM';
+        const errorMsg = 'Barcode must have at least 3 parts separated by hyphens (PREFIX-ID-CHECKSUM)';
         setErrorMessage(errorMsg);
         toast({
           variant: "destructive",
           title: "Invalid barcode format",
-          description: "The barcode must be in the format: PREFIX-ID-CHECKSUM"
+          description: errorMsg
         });
+        setLoading(false);
+        return;
+      }
+      
+      // Check if the checksum part is a number
+      const checksumPart = parts[parts.length - 1];
+      if (!/^\d{1,2}$/.test(checksumPart)) {
+        setScanResult('error');
+        const errorMsg = 'The last part of the barcode must be a 1-2 digit checksum number';
+        setErrorMessage(errorMsg);
+        toast({
+          variant: "destructive",
+          title: "Invalid checksum",
+          description: errorMsg
+        });
+        setLoading(false);
         return;
       }
       
@@ -63,7 +80,7 @@ export const useBarcodeProcessor = ({
         }
       } else {
         setScanResult('error');
-        setErrorMessage('The barcode checksum is invalid');
+        setErrorMessage('The barcode format is correct, but the checksum is invalid');
         toast({
           variant: "destructive",
           title: "Invalid barcode",

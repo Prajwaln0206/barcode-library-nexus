@@ -49,29 +49,27 @@ export const generateUniqueBarcode = (id: string, prefix = 'LIB'): string => {
  * @returns Boolean indicating whether the barcode is valid
  */
 export const validateBarcode = (barcode: string): boolean => {
-  // Check basic format using regex
-  if (!barcode.match(/^[A-Z]+-[a-zA-Z0-9-]+-\d{1,2}$/)) {
-    console.log('Barcode validation failed: incorrect format');
-    return false;
-  }
-  
+  // Check if barcode has at least 3 parts separated by hyphens
   const parts = barcode.split('-');
-  
-  // Ensure we have the prefix, id, and checksum parts
-  if (parts.length !== 3) {
-    console.log('Barcode validation failed: incorrect number of parts', parts.length);
+  if (parts.length < 3) {
+    console.log('Barcode validation failed: insufficient parts', parts.length);
     return false;
   }
   
-  const [prefix, id, checksumStr] = parts;
-  
-  // Validate checksum is a number
-  if (!/^\d+$/.test(checksumStr)) {
-    console.log('Barcode validation failed: checksum is not a number', checksumStr);
+  // The last part should be the checksum (a number)
+  const checksumStr = parts[parts.length - 1];
+  if (!/^\d{1,2}$/.test(checksumStr)) {
+    console.log('Barcode validation failed: checksum is not a 1-2 digit number', checksumStr);
     return false;
   }
   
   const checksum = parseInt(checksumStr, 10);
+  
+  // The prefix is the first part
+  const prefix = parts[0];
+  
+  // The ID is everything between prefix and checksum (might contain hyphens for UUIDs)
+  const id = parts.slice(1, parts.length - 1).join('-');
   
   // Recalculate the checksum
   const baseCode = `${prefix}-${id}`;

@@ -77,7 +77,6 @@ export const addBook = async (book: BookCreate): Promise<BookInfo> => {
         location: book.location,
         barcode: barcode,
         status: 'available'
-        // Removed cover_image as it doesn't exist in the database schema
       }
     ])
     .select()
@@ -112,7 +111,6 @@ export const updateBook = async (book: BookInfo): Promise<BookInfo> => {
       genre: book.genre,
       location: book.location,
       status: book.isAvailable ? 'available' : 'checked_out'
-      // Removed cover_image as it doesn't exist in the database schema
     })
     .eq('id', book.id)
     .select()
@@ -141,24 +139,42 @@ export const recordBookScan = async (
   bookId: string, 
   scanType: 'checkout' | 'return' | 'inventory'
 ): Promise<void> => {
-  const { data: session } = await supabase.auth.getSession();
-  
-  if (!session.session?.user) {
-    throw new Error('User must be authenticated to record scans');
-  }
-  
-  const { error } = await supabase
-    .from('scan_logs')
-    .insert([
-      {
-        book_id: bookId,
-        scan_type: scanType,
-        scanned_by: session.session.user.id
+  try {
+    const { data: session } = await supabase.auth.getSession();
+    
+    // If user isn't authenticated, just log scan without user ID
+    const { error } = await supabase
+      .from('scan_logs')
+      .insert([
+        {
+          book_id: bookId,
+          scan_type: scanType,
+          // Only add user ID if authenticated
+          ...(session.session?.user ? { scanned_by: session.session.user.id } : {})
+        }
+      ]);
+    
+    if (error) {
+      // If foreign key constraint error, try without the user ID
+      if (error.code === '23503' && error.message.includes('scan_logs_scanned_by_fkey')) {
+        const { error: retryError } = await supabase
+          .from('scan_logs')
+          .insert([{
+            book_id: bookId,
+            scan_type: scanType
+          }]);
+        
+        if (retryError) {
+          console.error('Error recording scan (retry):', retryError);
+          // Just log the error but don't throw it to prevent blocking UI
+        }
+      } else {
+        console.error('Error recording scan:', error);
+        // Just log the error but don't throw it to prevent blocking UI
       }
-    ]);
-  
-  if (error) {
-    console.error('Error recording scan:', error);
-    throw error;
+    }
+  } catch (error) {
+    console.error('Exception in recordBookScan:', error);
+    // Just log the error but don't throw it to prevent blocking UI
   }
 };

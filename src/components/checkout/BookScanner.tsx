@@ -26,7 +26,8 @@ const BookScanner: React.FC<BookScannerProps> = ({
     errorMessage,
     handleBarcodeSubmit,
     handleBarcodeScan,
-    simulateScan
+    simulateScan,
+    clearResults
   } = useBookScanner({
     onBookScanned,
     loading,
@@ -48,10 +49,10 @@ const BookScanner: React.FC<BookScannerProps> = ({
           </div>
           <Button 
             size="sm" 
-            variant="outline"
+            variant="secondary"
             onClick={simulateScan}
             disabled={loading}
-            title="Simulate a book scan"
+            className="bg-green-100 hover:bg-green-200 text-green-700 border border-green-300"
           >
             <Zap className="h-4 w-4 mr-2" />
             Test Scan
@@ -84,6 +85,19 @@ const BookScanner: React.FC<BookScannerProps> = ({
             scanResult={scanResult}
             errorMessage={errorMessage}
           />
+          
+          {scanResult && (
+            <div className="flex justify-end">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={clearResults}
+                className="text-xs"
+              >
+                Clear
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

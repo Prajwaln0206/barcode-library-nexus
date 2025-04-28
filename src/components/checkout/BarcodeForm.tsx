@@ -3,7 +3,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import BarcodeGenerator from '@/components/books/BarcodeGenerator';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BarcodeFormProps {
   barcode: string;
@@ -43,7 +44,21 @@ const BarcodeForm: React.FC<BarcodeFormProps> = ({
           </div>
         )}
         
-        <div className="text-xs text-muted-foreground mt-1">
+        <div className="flex items-center text-xs text-muted-foreground mt-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3 w-3 mr-1 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="text-xs max-w-xs">
+                <p>Barcode format: PREFIX-ID-CHECKSUM</p>
+                <p>• PREFIX: Library identifier (e.g. LIB)</p>
+                <p>• ID: Book identifier (can contain hyphens)</p>
+                <p>• CHECKSUM: 1-2 digit number</p>
+                <p>Example: LIB-123456-42 or LIB-ed351ab7-56</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           Format: PREFIX-ID-CHECKSUM (e.g. LIB-123456-42)
         </div>
       </div>
