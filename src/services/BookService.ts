@@ -141,37 +141,35 @@ export const recordBookScan = async (
 ): Promise<void> => {
   try {
     const { data: session } = await supabase.auth.getSession();
+    const userId = session.session?.user?.id;
     
-    // If user isn't authenticated, just log scan without user ID
+    // Create a scan log object
+    const scanLog = {
+      book_id: bookId,
+      scan_type: scanType,
+      // We need to provide a scanned_by value that's not undefined
+      // If no user ID available, use a default placeholder
+      scanned_by: userId || '00000000-0000-0000-0000-000000000000'
+    };
+    
+    // First attempt - try with the user ID if available
     const { error } = await supabase
       .from('scan_logs')
-      .insert([
-        {
-          book_id: bookId,
-          scan_type: scanType,
-          // Only add user ID if authenticated
-          ...(session.session?.user ? { scanned_by: session.session.user.id } : {})
-        }
-      ]);
+      .insert(scanLog);
     
-    if (error) {
-      // If foreign key constraint error, try without the user ID
-      if (error.code === '23503' && error.message.includes('scan_logs_scanned_by_fkey')) {
-        const { error: retryError } = await supabase
-          .from('scan_logs')
-          .insert([{
-            book_id: bookId,
-            scan_type: scanType
-          }]);
-        
-        if (retryError) {
-          console.error('Error recording scan (retry):', retryError);
-          // Just log the error but don't throw it to prevent blocking UI
-        }
-      } else {
-        console.error('Error recording scan:', error);
-        // Just log the error but don't throw it to prevent blocking UI
-      }
+    // If there's an error and it's related to the foreign key constraint on scanned_by
+    if (error && error.code === '23503' && error.message?.includes('scan_logs_scanned_by_fkey')) {
+      console.log('Foreign key constraint error for scanned_by, trying without user association');
+      
+      // Try to create a scan log without associating it with a specific user
+      // Log scan without creating a foreign key constraint issue
+      await supabase.rpc('log_scan_without_user', {
+        p_book_id: bookId,
+        p_scan_type: scanType
+      });
+    } else if (error) {
+      console.error('Error recording scan:', error);
+      // Just log the error but don't throw it to prevent blocking UI
     }
   } catch (error) {
     console.error('Exception in recordBookScan:', error);
