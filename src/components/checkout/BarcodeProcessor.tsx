@@ -23,12 +23,14 @@ export const useBarcodeProcessor = ({
     if (!barcode) return;
     
     setLoading(true);
+    setScanResult(null);
     
     try {
       // First check if the barcode has the expected format
       if (!barcode.includes('-') || barcode.split('-').length !== 3) {
         setScanResult('error');
-        setErrorMessage('Invalid barcode format. Expected format: PREFIX-ID-CHECKSUM');
+        const errorMsg = 'Invalid barcode format. Expected format: PREFIX-ID-CHECKSUM';
+        setErrorMessage(errorMsg);
         toast({
           variant: "destructive",
           title: "Invalid barcode format",
@@ -37,6 +39,7 @@ export const useBarcodeProcessor = ({
         return;
       }
       
+      // Check if it's a valid barcode according to our validation logic
       if (validateBarcode(barcode)) {
         const book = await getBookByBarcode(barcode);
         
@@ -60,11 +63,11 @@ export const useBarcodeProcessor = ({
         }
       } else {
         setScanResult('error');
-        setErrorMessage('The barcode format is not valid');
+        setErrorMessage('The barcode checksum is invalid');
         toast({
           variant: "destructive",
           title: "Invalid barcode",
-          description: "The barcode format is not valid."
+          description: "The barcode format appears correct, but the checksum is invalid."
         });
       }
     } catch (error) {

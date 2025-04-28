@@ -35,7 +35,9 @@ export const useBookScanner = ({
   
   const handleBarcodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await processBarcode(barcode);
+    if (barcode.trim()) {
+      await processBarcode(barcode);
+    }
   };
   
   const handleBarcodeScan = async (scannedBarcode: string) => {
@@ -45,6 +47,12 @@ export const useBookScanner = ({
     await processBarcode(scannedBarcode);
   };
   
+  const clearResults = () => {
+    setBarcode('');
+    setScanResult(null);
+    setErrorMessage('');
+  };
+  
   return {
     barcode,
     setBarcode,
@@ -52,6 +60,7 @@ export const useBookScanner = ({
     errorMessage,
     handleBarcodeSubmit,
     handleBarcodeScan,
-    simulateScan
+    simulateScan,
+    clearResults
   };
 };

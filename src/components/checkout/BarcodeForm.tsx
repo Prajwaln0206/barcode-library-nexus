@@ -33,7 +33,7 @@ const BarcodeForm: React.FC<BarcodeFormProps> = ({
             className="flex-1"
             disabled={loading}
           />
-          <Button type="submit" disabled={loading}>Lookup</Button>
+          <Button type="submit" disabled={loading || !barcode.trim()}>Lookup</Button>
         </div>
         
         {scanResult === 'error' && (
@@ -42,6 +42,10 @@ const BarcodeForm: React.FC<BarcodeFormProps> = ({
             <p>{errorMessage}</p>
           </div>
         )}
+        
+        <div className="text-xs text-muted-foreground mt-1">
+          Format: PREFIX-ID-CHECKSUM (e.g. LIB-123456-42)
+        </div>
       </div>
       
       {barcode && (

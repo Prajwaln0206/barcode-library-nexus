@@ -44,11 +44,17 @@ export const generateUniqueBarcode = (id: string, prefix = 'LIB'): string => {
 };
 
 /**
- * Validates a barcode by verifying its checksum
+ * Validates a barcode by verifying its format and checksum
  * @param barcode - The barcode string to validate
  * @returns Boolean indicating whether the barcode is valid
  */
 export const validateBarcode = (barcode: string): boolean => {
+  // Check basic format using regex
+  if (!barcode.match(/^[A-Z]+-[a-zA-Z0-9-]+-\d{1,2}$/)) {
+    console.log('Barcode validation failed: incorrect format');
+    return false;
+  }
+  
   const parts = barcode.split('-');
   
   // Ensure we have the prefix, id, and checksum parts

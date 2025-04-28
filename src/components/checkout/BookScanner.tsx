@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Scan } from 'lucide-react';
+import { Scan, Zap } from 'lucide-react';
 import BarcodeScanner from '@/components/scanner/BarcodeScanner';
 import { BookInfo } from '@/components/books/BookCard';
 import BarcodeForm from './BarcodeForm';
 import { useBookScanner } from '@/hooks/useBookScanner';
+import { Button } from '@/components/ui/button';
 
 interface BookScannerProps {
   onBookScanned: (book: BookInfo) => void;
@@ -24,7 +25,8 @@ const BookScanner: React.FC<BookScannerProps> = ({
     scanResult,
     errorMessage,
     handleBarcodeSubmit,
-    handleBarcodeScan
+    handleBarcodeScan,
+    simulateScan
   } = useBookScanner({
     onBookScanned,
     loading,
@@ -34,13 +36,27 @@ const BookScanner: React.FC<BookScannerProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <Scan className="mr-2 h-5 w-5" />
-          Scan Book
-        </CardTitle>
-        <CardDescription>
-          Use a barcode scanner or enter barcode manually
-        </CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="flex items-center">
+              <Scan className="mr-2 h-5 w-5" />
+              Scan Book
+            </CardTitle>
+            <CardDescription>
+              Use a barcode scanner or enter barcode manually
+            </CardDescription>
+          </div>
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={simulateScan}
+            disabled={loading}
+            title="Simulate a book scan"
+          >
+            <Zap className="h-4 w-4 mr-2" />
+            Test Scan
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
