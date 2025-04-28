@@ -163,11 +163,18 @@ export const recordBookScan = async (
       
       // Try to create a scan log without associating it with a specific user
       // Use the raw function call to bypass TypeScript constraints
-      // @ts-ignore - Ignore the TypeScript error for this specific RPC call
-      await supabase.rpc('log_scan_without_user', {
-        p_book_id: bookId,
-        p_scan_type: scanType
-      });
+      const { error: rpcError } = await supabase.rpc(
+        // @ts-ignore - Typescript doesn't know about this RPC function
+        'log_scan_without_user',
+        {
+          p_book_id: bookId,
+          p_scan_type: scanType
+        }
+      );
+
+      if (rpcError) {
+        console.error('Error in log_scan_without_user RPC call:', rpcError);
+      }
     } else if (error) {
       console.error('Error recording scan:', error);
       // Just log the error but don't throw it to prevent blocking UI
