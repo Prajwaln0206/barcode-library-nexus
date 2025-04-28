@@ -162,7 +162,8 @@ export const recordBookScan = async (
       console.log('Foreign key constraint error for scanned_by, trying without user association');
       
       // Try to create a scan log without associating it with a specific user
-      // Log scan without creating a foreign key constraint issue
+      // Use the raw function call to bypass TypeScript constraints
+      // @ts-ignore - Ignore the TypeScript error for this specific RPC call
       await supabase.rpc('log_scan_without_user', {
         p_book_id: bookId,
         p_scan_type: scanType
