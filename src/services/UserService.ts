@@ -60,6 +60,7 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
     // Fix: The insert needs to match the table structure, and for users table, 
     // Supabase will generate the ID automatically with gen_random_uuid()
+    // We remove the id field and let Supabase generate it
     const { data, error } = await supabase
       .from('users')
       .insert({
