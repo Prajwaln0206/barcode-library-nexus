@@ -237,7 +237,7 @@ export const getReportSummary = async (): Promise<{ totalCheckouts: number; acti
     
     if (checkoutsError) throw checkoutsError;
     
-    // Fix: Use the same approach as in StatsService.ts to get active patrons
+    // Fix: Use a safer approach to handle active patrons
     const { data: activeLoans, error: activeLoansError } = await supabase
       .from('loans')
       .select('user_id')
@@ -249,13 +249,17 @@ export const getReportSummary = async (): Promise<{ totalCheckouts: number; acti
     // Get unique user IDs from active loans
     const activeUserIds = [...new Set(activeLoans.map(loan => loan.user_id))];
     
-    // Count active members
-    const { count: activePatrons, error: activePatronsError } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .in('id', activeUserIds.length > 0 ? activeUserIds : ['no-active-users']);
-    
-    if (activePatronsError) throw activePatronsError;
+    // Count active members - fix the issue with empty array
+    let activePatrons = 0;
+    if (activeUserIds.length > 0) {
+      const { count, error: activePatronsError } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .in('id', activeUserIds);
+      
+      if (activePatronsError) throw activePatronsError;
+      activePatrons = count || 0;
+    }
     
     // Get overdue books
     const today = new Date();
@@ -270,7 +274,7 @@ export const getReportSummary = async (): Promise<{ totalCheckouts: number; acti
     
     return {
       totalCheckouts: totalCheckouts || 0,
-      activePatrons: activePatrons || 0,
+      activePatrons: activePatrons,
       overdueBooks: overdueBooks || 0
     };
   } catch (error) {

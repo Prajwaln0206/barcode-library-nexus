@@ -58,7 +58,8 @@ export const getAllUsers = async (): Promise<UserInfo[]> => {
 
 export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
-    // Fix: Pass a single object instead of an array
+    // Fix: The insert needs to match the table structure, and for users table, 
+    // Supabase will generate the ID automatically with gen_random_uuid()
     const { data, error } = await supabase
       .from('users')
       .insert({

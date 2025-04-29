@@ -37,7 +37,6 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     if (membersError) throw membersError;
 
     // Get number of active members (users with at least one active loan)
-    // Fix: Use subquery correctly with proper types
     const { data: activeLoans, error: activeLoansError } = await supabase
       .from('loans')
       .select('user_id')
@@ -49,13 +48,17 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     // Get unique user IDs from active loans
     const activeUserIds = [...new Set(activeLoans.map(loan => loan.user_id))];
     
-    // Count active members
-    const { count: activeMembers, error: activeMembersError } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .in('id', activeUserIds.length > 0 ? activeUserIds : ['no-active-users']);
-    
-    if (activeMembersError) throw activeMembersError;
+    // Count active members - fix the issue with empty array
+    let activeMembers = 0;
+    if (activeUserIds.length > 0) {
+      const { count, error: activeMembersError } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .in('id', activeUserIds);
+      
+      if (activeMembersError) throw activeMembersError;
+      activeMembers = count || 0;
+    }
 
     return {
       totalBooks: totalBooks || 0,
