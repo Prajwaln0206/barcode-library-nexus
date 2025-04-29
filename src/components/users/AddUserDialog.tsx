@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { addUser } from '@/services/UserService';
+import { addUser, UserCreate } from '@/services/UserService';
 
 // Form schema with validation
 const userFormSchema = z.object({
@@ -43,7 +43,15 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
     
     try {
       console.log('Adding user:', data);
-      const newUser = await addUser(data);
+      
+      // Create a user object that matches the UserCreate type
+      const userToCreate: UserCreate = {
+        name: data.name,     // Required field
+        email: data.email,   // Required field
+        phone: data.phone    // Optional field
+      };
+      
+      const newUser = await addUser(userToCreate);
       
       // Show success toast
       toast({
