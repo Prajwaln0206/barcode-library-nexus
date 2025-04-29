@@ -58,16 +58,16 @@ export const getAllUsers = async (): Promise<UserInfo[]> => {
 
 export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
-    // Fix: Add explicit type casting to satisfy TypeScript
-    // While in runtime, Supabase will auto-generate the UUID
+    // Fix: Using TypeScript type assertion to bypass the requirement for ID
+    // In runtime, Supabase will automatically generate the UUID
     const { data, error } = await supabase
       .from('users')
-      .insert({
+      .insert([{  // Using array syntax which is more flexible with TypeScript
         name: user.name,
         email: user.email,
         phone: user.phone,
         membership_start: new Date().toISOString()
-      } as any) // Use type assertion to bypass TypeScript's strict checking
+      }])
       .select()
       .single();
     
