@@ -6,7 +6,7 @@ import { UserInfo } from '@/components/users/UserCard';
 export type UserCreate = {
   name: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
 };
 
 export const getAllUsers = async (): Promise<UserInfo[]> => {
@@ -58,27 +58,35 @@ export const getAllUsers = async (): Promise<UserInfo[]> => {
 
 export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
-    // Using array syntax for insert with type assertion
-    // Supabase will automatically generate the UUID for id
+    console.log('UserService: Adding user:', user);
+    
+    // Format the user data for insertion
+    const userData = {
+      name: user.name,
+      email: user.email,
+      phone: user.phone || null,
+      membership_start: new Date().toISOString()
+    };
+    
+    console.log('UserService: Formatted user data:', userData);
+    
+    // Using object syntax for insert 
     const { data, error } = await supabase
       .from('users')
-      .insert([{
-        name: user.name,
-        email: user.email,
-        phone: user.phone || null,
-        membership_start: new Date().toISOString()
-      }] as any)
+      .insert(userData)
       .select()
       .single();
     
     if (error) {
       console.error('Supabase error details:', error);
-      throw error;
+      throw new Error(`Database error: ${error.message}`);
     }
     
     if (!data) {
       throw new Error('No data returned from insert operation');
     }
+    
+    console.log('UserService: Successfully added user, response:', data);
     
     return {
       id: data.id,

@@ -8,7 +8,7 @@ import AddUserDialog from '@/components/users/AddUserDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { getAllUsers, addUser, deleteUser } from '@/services/UserService';
+import { getAllUsers, deleteUser } from '@/services/UserService';
 
 const Users = () => {
   const [users, setUsers] = useState<UserInfo[]>([]);
@@ -48,24 +48,10 @@ const Users = () => {
   };
   
   // Add a new user to the database
-  const handleUserAdded = async (userData: { name: string, email: string, phone?: string }) => {
-    try {
-      const newUser = await addUser(userData);
-      // Refresh the users list after adding new user
-      fetchUsers();
-      
-      toast({
-        title: 'User added',
-        description: `${userData.name} has been added successfully`,
-      });
-    } catch (error) {
-      console.error('Error adding user:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to add new user',
-      });
-    }
+  const handleUserAdded = async () => {
+    // Just refresh the users list after adding new user
+    console.log('User added, refreshing list');
+    fetchUsers();
   };
   
   // Delete a user from the database
