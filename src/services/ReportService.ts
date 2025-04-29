@@ -237,19 +237,25 @@ export const getReportSummary = async (): Promise<{ totalCheckouts: number; acti
     
     if (checkoutsError) throw checkoutsError;
     
-    // Get active patrons (users with at least one active loan)
-    const { count: activePatrons, error: patronsError } = await supabase
-      .from('users')
-      .select('id', { count: 'exact', head: true })
-      .in('id', (query) => {
-        query
-          .from('loans')
-          .select('user_id')
-          .is('return_date', null)
-          .eq('status', 'active');
-      });
+    // Fix: Use the same approach as in StatsService.ts to get active patrons
+    const { data: activeLoans, error: activeLoansError } = await supabase
+      .from('loans')
+      .select('user_id')
+      .is('return_date', null)
+      .eq('status', 'active');
     
-    if (patronsError) throw patronsError;
+    if (activeLoansError) throw activeLoansError;
+    
+    // Get unique user IDs from active loans
+    const activeUserIds = [...new Set(activeLoans.map(loan => loan.user_id))];
+    
+    // Count active members
+    const { count: activePatrons, error: activePatronsError } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .in('id', activeUserIds.length > 0 ? activeUserIds : ['no-active-users']);
+    
+    if (activePatronsError) throw activePatronsError;
     
     // Get overdue books
     const today = new Date();

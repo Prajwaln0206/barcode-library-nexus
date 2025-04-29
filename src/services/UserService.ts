@@ -58,16 +58,15 @@ export const getAllUsers = async (): Promise<UserInfo[]> => {
 
 export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
+    // Fix: Pass a single object instead of an array
     const { data, error } = await supabase
       .from('users')
-      .insert([
-        {
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          membership_start: new Date().toISOString()
-        }
-      ])
+      .insert({
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        membership_start: new Date().toISOString()
+      })
       .select()
       .single();
     
