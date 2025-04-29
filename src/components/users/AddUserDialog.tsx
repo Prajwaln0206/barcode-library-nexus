@@ -37,18 +37,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
   });
   
   function onSubmit(data: UserFormValues) {
-    // In a real application, this would make an API call to add the user
     console.log('Adding user:', data);
-    
-    // Generate a fake user with the form data
-    const newUser = {
-      id: `user_${Math.random().toString(36).substr(2, 9)}`,
-      name: data.name,
-      email: data.email,
-      membershipStartDate: new Date(),
-      booksCheckedOut: 0,
-      status: 'active' as const,
-    };
     
     // Show success toast
     toast({

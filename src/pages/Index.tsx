@@ -1,14 +1,41 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { BookOpen, Users, CheckSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageTransition from '@/components/layout/PageTransition';
 import StatCard from '@/components/dashboard/StatCard';
 import QuickActions from '@/components/dashboard/QuickActions';
-import { dashboardStats } from '@/lib/data';
+import { DashboardStats, getDashboardStats } from '@/services/StatsService';
+import { useToast } from '@/hooks/use-toast';
 
 const staggerDelay = 0.1;
 
 const Index = () => {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setLoading(true);
+        const data = await getDashboardStats();
+        setStats(data);
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch dashboard statistics',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, [toast]);
+
   return (
     <PageTransition>
       <div className="space-y-8">
@@ -17,49 +44,61 @@ const Index = () => {
           <p className="text-muted-foreground">Manage your library resources efficiently</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: staggerDelay * 0 }}
-          >
-            <StatCard
-              title="Books in Library"
-              value={dashboardStats.totalBooks}
-              icon={<BookOpen className="h-5 w-5 text-primary" />}
-              description="Total books available in the system"
-              trend={{ value: 4.3, isPositive: true }}
-            />
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: staggerDelay * 1 }}
-          >
-            <StatCard
-              title="Active Members"
-              value={dashboardStats.activeMembers}
-              icon={<Users className="h-5 w-5 text-emerald-500" />}
-              description="Current active library members"
-              trend={{ value: 2.1, isPositive: true }}
-            />
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: staggerDelay * 2 }}
-          >
-            <StatCard
-              title="Books Checked Out"
-              value={dashboardStats.booksCheckedOut}
-              icon={<CheckSquare className="h-5 w-5 text-blue-500" />}
-              description="Books currently borrowed"
-              trend={{ value: 1.2, isPositive: true }}
-            />
-          </motion.div>
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {[0, 1, 2].map((index) => (
+              <div key={index} className="glass-card rounded-xl p-6 animate-pulse">
+                <div className="h-6 w-1/3 bg-muted rounded mb-2"></div>
+                <div className="h-8 w-1/4 bg-muted rounded mb-4"></div>
+                <div className="h-4 w-2/3 bg-muted rounded"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: staggerDelay * 0 }}
+            >
+              <StatCard
+                title="Books in Library"
+                value={stats?.totalBooks || 0}
+                icon={<BookOpen className="h-5 w-5 text-primary" />}
+                description="Total books available in the system"
+                trend={{ value: 4.3, isPositive: true }}
+              />
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: staggerDelay * 1 }}
+            >
+              <StatCard
+                title="Active Members"
+                value={stats?.activeMembers || 0}
+                icon={<Users className="h-5 w-5 text-emerald-500" />}
+                description="Current active library members"
+                trend={{ value: 2.1, isPositive: true }}
+              />
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: staggerDelay * 2 }}
+            >
+              <StatCard
+                title="Books Checked Out"
+                value={stats?.booksCheckedOut || 0}
+                icon={<CheckSquare className="h-5 w-5 text-blue-500" />}
+                description="Books currently borrowed"
+                trend={{ value: 1.2, isPositive: true }}
+              />
+            </motion.div>
+          </div>
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div
