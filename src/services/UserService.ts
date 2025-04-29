@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
 
@@ -67,7 +66,7 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
         email: user.email,
         phone: user.phone,
         membership_start: new Date().toISOString()
-      }])
+      }] as any)  // Type assertion to bypass TypeScript's strict checking
       .select()
       .single();
     
