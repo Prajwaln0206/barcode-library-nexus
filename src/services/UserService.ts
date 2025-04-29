@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
 
@@ -57,20 +58,27 @@ export const getAllUsers = async (): Promise<UserInfo[]> => {
 
 export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
-    // Fix: Using TypeScript type assertion to bypass the requirement for ID
-    // In runtime, Supabase will automatically generate the UUID
+    // Using array syntax for insert with type assertion
+    // Supabase will automatically generate the UUID for id
     const { data, error } = await supabase
       .from('users')
-      .insert([{  // Using array syntax which is more flexible with TypeScript
+      .insert([{
         name: user.name,
         email: user.email,
-        phone: user.phone,
+        phone: user.phone || null,
         membership_start: new Date().toISOString()
-      }] as any)  // Type assertion to bypass TypeScript's strict checking
+      }] as any)
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error details:', error);
+      throw error;
+    }
+    
+    if (!data) {
+      throw new Error('No data returned from insert operation');
+    }
     
     return {
       id: data.id,

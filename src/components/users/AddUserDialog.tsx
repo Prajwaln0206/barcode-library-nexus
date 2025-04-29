@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { addUser } from '@/services/UserService';
 
 // Form schema with validation
 const userFormSchema = z.object({
@@ -25,7 +26,8 @@ interface AddUserDialogProps {
 
 const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
   const { toast } = useToast();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -36,24 +38,40 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
     },
   });
   
-  function onSubmit(data: UserFormValues) {
-    console.log('Adding user:', data);
+  async function onSubmit(data: UserFormValues) {
+    setIsSubmitting(true);
     
-    // Show success toast
-    toast({
-      title: "User added successfully",
-      description: `${data.name} has been added to the system.`,
-    });
-    
-    // Reset the form
-    form.reset();
-    
-    // Close the dialog
-    setOpen(false);
-    
-    // Call the callback if provided
-    if (onUserAdded) {
-      onUserAdded(data);
+    try {
+      console.log('Adding user:', data);
+      const newUser = await addUser(data);
+      
+      // Show success toast
+      toast({
+        title: "User added successfully",
+        description: `${data.name} has been added to the system.`,
+      });
+      
+      // Reset the form
+      form.reset();
+      
+      // Close the dialog
+      setOpen(false);
+      
+      // Call the callback if provided
+      if (onUserAdded) {
+        onUserAdded(data);
+      }
+    } catch (error) {
+      console.error('Failed to add user:', error);
+      
+      // Show error toast
+      toast({
+        variant: 'destructive',
+        title: "Failed to add user",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   }
   
@@ -115,7 +133,9 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
             />
             
             <DialogFooter>
-              <Button type="submit">Add User</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Adding...' : 'Add User'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

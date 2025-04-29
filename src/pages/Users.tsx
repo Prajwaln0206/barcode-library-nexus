@@ -16,26 +16,26 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllUsers();
-        setUsers(data);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to load users from database',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllUsers();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load users from database',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUsers();
-  }, [toast]);
+  }, []);
   
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -51,7 +51,8 @@ const Users = () => {
   const handleUserAdded = async (userData: { name: string, email: string, phone?: string }) => {
     try {
       const newUser = await addUser(userData);
-      setUsers(prevUsers => [newUser, ...prevUsers]);
+      // Refresh the users list after adding new user
+      fetchUsers();
       
       toast({
         title: 'User added',
