@@ -45,11 +45,10 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
       console.log('Adding user:', data);
       
       // Create a user object that matches the UserCreate type
-      // Ensure all required fields are present
       const userToCreate: UserCreate = {
-        name: data.name,     // Required field
-        email: data.email,   // Required field
-        phone: data.phone || null    // Optional field - handle empty string
+        name: data.name,
+        email: data.email,
+        phone: data.phone || null
       };
       
       console.log('Sending to API:', userToCreate);

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
 import { v4 as uuidv4 } from 'uuid';
@@ -60,7 +61,8 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
     console.log('UserService: Adding user:', user);
     
-    // Generate a UUID for the new user
+    // Create a random id that will satisfy the database schema requirements
+    // This is necessary because the users table has a constraint on the id field
     const userId = uuidv4();
     
     // Create user data with the required id field
@@ -74,7 +76,7 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
     
     console.log('UserService: Formatted user data:', userData);
     
-    // Insert the user data with the id
+    // Insert the user data with the explicit id
     const { data, error } = await supabase
       .from('users')
       .insert(userData)
