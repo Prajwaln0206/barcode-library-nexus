@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
 import { v4 as uuidv4 } from 'uuid';
@@ -60,8 +61,11 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
     console.log('UserService: Adding user:', user);
     
-    // Instead of generating a UUID, let Supabase generate one via default value
+    // We need to generate a UUID since the TypeScript type requires an id
+    const userId = uuidv4();
+    
     const userData = {
+      id: userId,
       name: user.name,
       email: user.email,
       phone: user.phone || null,
@@ -70,7 +74,6 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
     
     console.log('UserService: Formatted user data:', userData);
     
-    // Using object syntax for insert without specifying ID
     const { data, error } = await supabase
       .from('users')
       .insert(userData)
