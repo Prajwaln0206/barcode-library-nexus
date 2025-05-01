@@ -42,18 +42,19 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
     setIsSubmitting(true);
     
     try {
-      console.log('Adding user:', data);
+      console.log('Adding user with form data:', data);
       
-      // Create a user object that matches the UserCreate type
+      // Convert form data to UserCreate type
       const userToCreate: UserCreate = {
         name: data.name,
         email: data.email,
         phone: data.phone || null
       };
       
-      console.log('Sending to API:', userToCreate);
+      console.log('Converted to UserCreate:', userToCreate);
+      
       const newUser = await addUser(userToCreate);
-      console.log('API response:', newUser);
+      console.log('User added successfully:', newUser);
       
       // Show success toast
       toast({
@@ -74,11 +75,11 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
     } catch (error) {
       console.error('Failed to add user:', error);
       
-      // Show error toast with more specific message
+      // Show more detailed error message
       toast({
         variant: 'destructive',
         title: "Failed to add user",
-        description: error instanceof Error ? error.message : "An unknown error occurred while adding the user. Please try again.",
+        description: error instanceof Error ? error.message : "An unknown error occurred. Please try again.",
       });
     } finally {
       setIsSubmitting(false);

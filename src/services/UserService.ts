@@ -59,13 +59,29 @@ export const getAllUsers = async (): Promise<UserInfo[]> => {
 
 export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
-    console.log('UserService: Adding user:', user);
+    console.log('UserService: Adding user with data:', user);
     
-    // Create a random id that will satisfy the database schema requirements
-    // This is necessary because the users table has a constraint on the id field
-    const userId = uuidv4();
+    // First, check if user with this email already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', user.email)
+      .single();
     
-    // Create user data with the required id field
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = not found, which is fine
+      console.error('Error checking for existing user:', checkError);
+      throw new Error(`Database error when checking user: ${checkError.message}`);
+    }
+    
+    if (existingUser) {
+      console.log('User already exists:', existingUser);
+      throw new Error(`A user with email ${user.email} already exists`);
+    }
+    
+    // Generate a completely random UUID without any specific format requirements
+    const userId = crypto.randomUUID ? crypto.randomUUID() : uuidv4();
+    console.log('Generated user ID:', userId);
+    
     const userData = {
       id: userId,
       name: user.name,
@@ -74,17 +90,17 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
       membership_start: new Date().toISOString()
     };
     
-    console.log('UserService: Formatted user data:', userData);
+    console.log('Prepared user data for insertion:', userData);
     
-    // Insert the user data with the explicit id
+    // Use basic insert instead of upsert
     const { data, error } = await supabase
       .from('users')
-      .insert(userData)
+      .insert([userData])
       .select()
       .single();
     
     if (error) {
-      console.error('Supabase error details:', error);
+      console.error('Supabase detailed error:', error);
       throw new Error(`Database error: ${error.message}`);
     }
     
@@ -92,7 +108,7 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
       throw new Error('No data returned from insert operation');
     }
     
-    console.log('UserService: Successfully added user, response:', data);
+    console.log('User successfully added, response:', data);
     
     return {
       id: data.id,
