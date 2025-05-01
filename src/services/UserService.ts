@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
 import { v4 as uuidv4 } from 'uuid';
@@ -61,12 +60,8 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
     console.log('UserService: Adding user:', user);
     
-    // Generate a UUID for the new user
-    const userId = uuidv4();
-    
-    // Format the user data for insertion - include the required id field
+    // Instead of generating a UUID, let Supabase generate one via default value
     const userData = {
-      id: userId,
       name: user.name,
       email: user.email,
       phone: user.phone || null,
@@ -75,7 +70,7 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
     
     console.log('UserService: Formatted user data:', userData);
     
-    // Using object syntax for insert 
+    // Using object syntax for insert without specifying ID
     const { data, error } = await supabase
       .from('users')
       .insert(userData)
