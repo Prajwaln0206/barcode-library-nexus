@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
 
@@ -60,12 +59,9 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
     console.log('UserService: Adding user:', user);
     
-    // Generate a UUID for the user
-    const uuid = crypto.randomUUID();
-    
-    // Format the user data for insertion
+    // Format the user data for insertion - WITHOUT specifying the ID
+    // Let Supabase generate the UUID that satisfies the constraint
     const userData = {
-      id: uuid,  // Adding the required id field
       name: user.name,
       email: user.email,
       phone: user.phone || null,
