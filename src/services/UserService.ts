@@ -1,5 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
+import { v4 as uuidv4 } from 'uuid';
 
 // Type for creating a new user
 export type UserCreate = {
@@ -59,9 +61,12 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
     console.log('UserService: Adding user:', user);
     
-    // Format the user data for insertion - WITHOUT specifying the ID
-    // Let Supabase generate the UUID that satisfies the constraint
+    // Generate a UUID for the new user
+    const userId = uuidv4();
+    
+    // Format the user data for insertion - include the required id field
     const userData = {
+      id: userId,
       name: user.name,
       email: user.email,
       phone: user.phone || null,
