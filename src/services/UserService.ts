@@ -61,11 +61,12 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
     console.log('UserService: Adding user:', user);
     
-    // We need to generate a UUID since the TypeScript type requires an id
-    const userId = uuidv4();
+    // First, try to register the user in auth system (this is a simplified example)
+    // In a real application, you would use Supabase Auth API to register the user
     
+    // For now, we'll just add the user to the users table directly
+    // Instead of generating our own UUID, we'll let Supabase handle ID generation
     const userData = {
-      id: userId,
       name: user.name,
       email: user.email,
       phone: user.phone || null,
@@ -74,9 +75,14 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
     
     console.log('UserService: Formatted user data:', userData);
     
+    // Using upsert instead of insert - this may help with the constraint issue
+    // We're using the email as a unique identifier to prevent duplicates
     const { data, error } = await supabase
       .from('users')
-      .insert(userData)
+      .upsert(userData, {
+        onConflict: 'email',
+        ignoreDuplicates: false
+      })
       .select()
       .single();
     
