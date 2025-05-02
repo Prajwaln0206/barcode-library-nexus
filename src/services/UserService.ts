@@ -77,9 +77,14 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
       throw new Error(`A user with email ${user.email} already exists`);
     }
     
-    // For library members, we don't need to create auth users
-    // Just insert directly into the users table and let Supabase generate the ID
+    // Generate a UUID on the client-side
+    // This is needed because the users table has a not-null constraint on id
+    const id = crypto.randomUUID();
+    console.log('Generated UUID for new user:', id);
+    
+    // For library members, we insert directly into the users table with our generated ID
     const userData = {
+      id: id, // Explicitly set the ID field
       name: user.name,
       email: user.email,
       phone: user.phone || null,
