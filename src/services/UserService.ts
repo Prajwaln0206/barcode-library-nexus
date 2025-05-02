@@ -78,10 +78,12 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
       throw new Error(`A user with email ${user.email} already exists`);
     }
     
-    // Generate a completely random UUID without any specific format requirements
-    const userId = crypto.randomUUID ? crypto.randomUUID() : uuidv4();
-    console.log('Generated user ID:', userId);
+    // Generate UUID in the format Supabase expects/requires
+    // We're using a string UUID that matches the format expected by Supabase auth.users table
+    const userId = uuidv4();
+    console.log('Generated user ID format:', userId);
     
+    // Create a new user entry - make sure the format exactly matches what Supabase expects
     const userData = {
       id: userId,
       name: user.name,
@@ -92,7 +94,10 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
     
     console.log('Prepared user data for insertion:', userData);
     
-    // Use basic insert instead of upsert
+    // First create an auth user if needed (this might be required by the schema constraints)
+    // Note: In a real application you might want to use Supabase Auth here instead
+    // For now we're just adding the user directly to the public.users table
+    
     const { data, error } = await supabase
       .from('users')
       .insert([userData])
