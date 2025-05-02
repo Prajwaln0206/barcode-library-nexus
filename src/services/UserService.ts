@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
-import { v4 as uuidv4 } from 'uuid';
 
 // Type for creating a new user
 export type UserCreate = {
@@ -59,7 +58,7 @@ export const getAllUsers = async (): Promise<UserInfo[]> => {
 
 export const addUser = async (user: UserCreate): Promise<UserInfo> => {
   try {
-    console.log('UserService: Adding user with data:', user);
+    console.log('UserService: Adding library member with data:', user);
     
     // First, check if user with this email already exists
     const { data: existingUser, error: checkError } = await supabase
@@ -78,14 +77,9 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
       throw new Error(`A user with email ${user.email} already exists`);
     }
     
-    // Generate UUID in the format Supabase expects/requires
-    // We're using a string UUID that matches the format expected by Supabase auth.users table
-    const userId = uuidv4();
-    console.log('Generated user ID format:', userId);
-    
-    // Create a new user entry - make sure the format exactly matches what Supabase expects
+    // For library members, we don't need to create auth users
+    // Just insert directly into the users table and let Supabase generate the ID
     const userData = {
-      id: userId,
       name: user.name,
       email: user.email,
       phone: user.phone || null,
@@ -93,10 +87,6 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
     };
     
     console.log('Prepared user data for insertion:', userData);
-    
-    // First create an auth user if needed (this might be required by the schema constraints)
-    // Note: In a real application you might want to use Supabase Auth here instead
-    // For now we're just adding the user directly to the public.users table
     
     const { data, error } = await supabase
       .from('users')

@@ -28,6 +28,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -40,6 +41,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
   
   async function onSubmit(data: UserFormValues) {
     setIsSubmitting(true);
+    setErrorMessage(null);
     
     try {
       console.log('Adding user with form data:', data);
@@ -75,11 +77,14 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
     } catch (error) {
       console.error('Failed to add user:', error);
       
+      const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
+      setErrorMessage(errorMsg);
+      
       // Show more detailed error message
       toast({
         variant: 'destructive',
         title: "Failed to add user",
-        description: error instanceof Error ? error.message : "An unknown error occurred. Please try again.",
+        description: errorMsg,
       });
     } finally {
       setIsSubmitting(false);
@@ -142,6 +147,12 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ onUserAdded }) => {
                 </FormItem>
               )}
             />
+            
+            {errorMessage && (
+              <div className="text-sm font-medium text-destructive">
+                {errorMessage}
+              </div>
+            )}
             
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
