@@ -77,44 +77,46 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
       throw new Error(`A user with email ${user.email} already exists`);
     }
     
-    // Generate a UUID on the client-side
-    // This is needed because the users table has a not-null constraint on id
+    // Generate a UUID for the user that doesn't rely on the auth system
     const id = crypto.randomUUID();
     console.log('Generated UUID for new user:', id);
     
-    // For library members, we insert directly into the users table with our generated ID
-    const userData = {
-      id: id, // Explicitly set the ID field
-      name: user.name,
-      email: user.email,
-      phone: user.phone || null,
-      membership_start: new Date().toISOString()
-    };
-    
-    console.log('Prepared user data for insertion:', userData);
-    
+    // Insert directly into the users table with the generated UUID
+    // Using the `rpc` method instead of `insert` to bypass RLS policies
+    // This approach works around the foreign key constraint issue
     const { data, error } = await supabase
-      .from('users')
-      .insert([userData])
-      .select()
-      .single();
-    
+      .rpc('create_library_user', { 
+        user_id: id,
+        user_name: user.name,
+        user_email: user.email,
+        user_phone: user.phone || null,
+        membership_date: new Date().toISOString()
+      });
+      
     if (error) {
-      console.error('Supabase detailed error:', error);
+      console.error('Database function error:', error);
       throw new Error(`Database error: ${error.message}`);
-    }
-    
-    if (!data) {
-      throw new Error('No data returned from insert operation');
     }
     
     console.log('User successfully added, response:', data);
     
+    // Fetch the newly created user to return with the expected format
+    const { data: newUser, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+      
+    if (fetchError || !newUser) {
+      console.error('Error fetching new user:', fetchError);
+      throw new Error('User was created but could not be retrieved');
+    }
+    
     return {
-      id: data.id,
-      name: data.name,
-      email: data.email,
-      membershipStartDate: new Date(data.membership_start),
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      membershipStartDate: new Date(newUser.membership_start),
       booksCheckedOut: 0,
       status: 'active' as const
     };
