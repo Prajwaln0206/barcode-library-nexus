@@ -185,6 +185,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_library_user: {
+        Args: {
+          user_id: string
+          user_name: string
+          user_email: string
+          user_phone: string
+          membership_date: string
+        }
+        Returns: boolean
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
