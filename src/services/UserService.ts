@@ -81,17 +81,15 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
     const id = crypto.randomUUID();
     console.log('Generated UUID for new user:', id);
     
-    // Insert directly into the users table with the generated UUID
-    // Using the `rpc` method instead of `insert` to bypass RLS policies
-    // This approach works around the foreign key constraint issue
-    const { data, error } = await supabase
-      .rpc('create_library_user', { 
-        user_id: id,
-        user_name: user.name,
-        user_email: user.email,
-        user_phone: user.phone || null,
-        membership_date: new Date().toISOString()
-      });
+    // Use a type assertion to work around the TypeScript limitation
+    // This tells TypeScript to trust us that this function exists
+    const { data, error } = await (supabase.rpc as any)('create_library_user', { 
+      user_id: id,
+      user_name: user.name,
+      user_email: user.email,
+      user_phone: user.phone || null,
+      membership_date: new Date().toISOString()
+    });
       
     if (error) {
       console.error('Database function error:', error);
