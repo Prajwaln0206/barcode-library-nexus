@@ -1,22 +1,15 @@
 
 import React, { useState } from 'react';
-import { Bookmark, Plus, Pencil, Trash, BookOpen } from 'lucide-react';
+import { Bookmark } from 'lucide-react';
 import PageTransition from '@/components/layout/PageTransition';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { CategoryItem } from '@/components/categories/types';
+import CategoryTable from '@/components/categories/CategoryTable';
+import AddCategoryForm from '@/components/categories/AddCategoryForm';
 
 const Categories = () => {
-  const [categories, setCategories] = useState([
+  const [categories, setCategories] = useState<CategoryItem[]>([
     { id: 1, name: 'Fiction', description: 'Novels, short stories, and narrative literature', count: 42 },
     { id: 2, name: 'Non-Fiction', description: 'Factual works including biography, history, and academic texts', count: 38 },
     { id: 3, name: 'Science Fiction', description: 'Literature with futuristic technology and settings', count: 25 },
@@ -83,7 +76,7 @@ const Categories = () => {
     });
   };
 
-  const startEdit = (category: any) => {
+  const startEdit = (category: CategoryItem) => {
     setEditMode(category.id);
     setEditName(category.name);
     setEditDescription(category.description);
@@ -151,128 +144,28 @@ const Categories = () => {
               <CardTitle>Book Categories</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-center">Books</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categories.map((category) => (
-                    <TableRow key={category.id}>
-                      <TableCell>
-                        {editMode === category.id ? (
-                          <Input 
-                            value={editName} 
-                            onChange={(e) => setEditName(e.target.value)}
-                          />
-                        ) : (
-                          <div className="font-medium">{category.name}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {editMode === category.id ? (
-                          <Input 
-                            value={editDescription} 
-                            onChange={(e) => setEditDescription(e.target.value)}
-                          />
-                        ) : (
-                          category.description
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <BookOpen className="h-4 w-4 text-muted-foreground" />
-                          <span>{category.count}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {editMode === category.id ? (
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={cancelEdit}
-                            >
-                              Cancel
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              onClick={() => saveEdit(category.id)}
-                            >
-                              Save
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              onClick={() => startEdit(category)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Button>
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              className="text-destructive hover:text-destructive/90"
-                              onClick={() => handleDeleteCategory(category.id)}
-                            >
-                              <Trash className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <CategoryTable
+                categories={categories}
+                editMode={editMode}
+                editName={editName}
+                editDescription={editDescription}
+                setEditName={setEditName}
+                setEditDescription={setEditDescription}
+                handleDeleteCategory={handleDeleteCategory}
+                startEdit={startEdit}
+                cancelEdit={cancelEdit}
+                saveEdit={saveEdit}
+              />
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Add New Category</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium">
-                    Category Name
-                  </label>
-                  <Input
-                    id="name"
-                    placeholder="Enter category name"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="description" className="text-sm font-medium">
-                    Description
-                  </label>
-                  <Input
-                    id="description"
-                    placeholder="Enter description (optional)"
-                    value={newDescription}
-                    onChange={(e) => setNewDescription(e.target.value)}
-                  />
-                </div>
-                <Button 
-                  className="w-full" 
-                  onClick={handleAddCategory}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Category
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <AddCategoryForm
+            newCategory={newCategory}
+            newDescription={newDescription}
+            setNewCategory={setNewCategory}
+            setNewDescription={setNewDescription}
+            handleAddCategory={handleAddCategory}
+          />
         </div>
       </div>
     </PageTransition>
