@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -19,7 +18,7 @@ import PageTransition from '@/components/layout/PageTransition';
 import BookCard, { BookInfo } from '@/components/books/BookCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getAllBooks } from '@/services/BookService';
+import { getAllBooks, deleteBook } from '@/services/BookService';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Dialog, 
@@ -27,7 +26,8 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogTrigger,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -179,6 +179,38 @@ const Books = () => {
       title: "Export started",
       description: `Exporting book catalog as "library-catalog-${timestamp}.csv"`
     });
+  };
+  
+  const handleDeleteBook = async (book: BookInfo) => {
+    try {
+      // Check if the book can be deleted (not checked out)
+      if (!book.isAvailable) {
+        toast({
+          variant: "destructive",
+          title: "Cannot delete book",
+          description: "Book is currently checked out and cannot be deleted."
+        });
+        return;
+      }
+      
+      // Call the deleteBook service
+      await deleteBook(book.id);
+      
+      // Update the books list
+      setBooks(prevBooks => prevBooks.filter(b => b.id !== book.id));
+      
+      toast({
+        title: "Book deleted",
+        description: `"${book.title}" has been removed from the catalog.`
+      });
+    } catch (error) {
+      console.error('Error deleting book:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete the book."
+      });
+    }
   };
   
   if (authLoading) {
@@ -396,7 +428,7 @@ const Books = () => {
                     book={book} 
                     onClick={handleBookClick}
                     onEdit={(book) => console.log('Edit book:', book)}
-                    onDelete={(book) => console.log('Delete book:', book)}
+                    onDelete={handleDeleteBook}
                   />
                 </motion.div>
               ))

@@ -41,6 +41,20 @@ const Categories = () => {
       return;
     }
     
+    // Check if the category name already exists (case insensitive)
+    const categoryExists = categories.some(
+      category => category.name.toLowerCase() === newCategory.trim().toLowerCase()
+    );
+    
+    if (categoryExists) {
+      toast({
+        title: "Error",
+        description: "Category with this name already exists",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const newId = Math.max(0, ...categories.map(c => c.id)) + 1;
     setCategories([
       ...categories,
@@ -86,6 +100,21 @@ const Categories = () => {
       toast({
         title: "Error",
         description: "Category name cannot be empty",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check if the edited name would create a duplicate (excluding the current category)
+    const duplicateName = categories.some(
+      category => category.id !== id && 
+      category.name.toLowerCase() === editName.trim().toLowerCase()
+    );
+    
+    if (duplicateName) {
+      toast({
+        title: "Error",
+        description: "Another category with this name already exists",
         variant: "destructive"
       });
       return;

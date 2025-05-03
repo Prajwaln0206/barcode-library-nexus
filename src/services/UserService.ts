@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
 
@@ -126,12 +125,36 @@ export const addUser = async (user: UserCreate): Promise<UserInfo> => {
 
 export const deleteUser = async (userId: string): Promise<void> => {
   try {
+    console.log('UserService: Deleting user with ID:', userId);
+    
+    // First check if user has any active loans
+    const { count, error: loanCheckError } = await supabase
+      .from('loans')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .is('return_date', null);
+    
+    if (loanCheckError) {
+      console.error('Error checking for active loans:', loanCheckError);
+      throw new Error(`Unable to check for active loans: ${loanCheckError.message}`);
+    }
+    
+    if (count && count > 0) {
+      throw new Error(`Cannot delete user with ${count} active loans. Please return all books first.`);
+    }
+    
+    // If no active loans, proceed with deletion
     const { error } = await supabase
       .from('users')
       .delete()
       .eq('id', userId);
     
-    if (error) throw error;
+    if (error) {
+      console.error('Database error when deleting user:', error);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    
+    console.log('User successfully deleted');
   } catch (error) {
     console.error('Error deleting user:', error);
     throw error;

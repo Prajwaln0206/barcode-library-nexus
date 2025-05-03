@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { BookInfo } from '@/components/books/BookCard';
 import { generateUniqueBarcode } from '@/lib/barcodeUtils';
@@ -182,5 +181,43 @@ export const recordBookScan = async (
   } catch (error) {
     console.error('Exception in recordBookScan:', error);
     // Just log the error but don't throw it to prevent blocking UI
+  }
+};
+
+// Delete a book from the database
+export const deleteBook = async (bookId: string): Promise<void> => {
+  try {
+    // First, check if the book has any active loans
+    const { count: activeLoans, error: loanCheckError } = await supabase
+      .from('loans')
+      .select('*', { count: 'exact', head: true })
+      .eq('book_id', bookId)
+      .is('return_date', null)
+      .eq('status', 'active');
+    
+    if (loanCheckError) {
+      console.error('Error checking for active loans:', loanCheckError);
+      throw loanCheckError;
+    }
+    
+    if (activeLoans && activeLoans > 0) {
+      throw new Error('Cannot delete a book that is currently checked out.');
+    }
+    
+    // If no active loans, proceed with deletion
+    const { error } = await supabase
+      .from('books')
+      .delete()
+      .eq('id', bookId);
+    
+    if (error) {
+      console.error('Error deleting book:', error);
+      throw error;
+    }
+    
+    console.log(`Book with ID ${bookId} deleted successfully`);
+  } catch (error) {
+    console.error('Error in deleteBook:', error);
+    throw error;
   }
 };
