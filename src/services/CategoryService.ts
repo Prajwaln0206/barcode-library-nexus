@@ -37,7 +37,17 @@ export const getAllCategories = async (): Promise<CategoryItem[]> => {
       };
     }));
 
-    return categoriesWithCounts;
+    // Filter out any potential duplicates by using a Set of IDs
+    const uniqueIds = new Set();
+    const uniqueCategories = categoriesWithCounts.filter(category => {
+      if (uniqueIds.has(category.id)) {
+        return false;
+      }
+      uniqueIds.add(category.id);
+      return true;
+    });
+
+    return uniqueCategories;
   } catch (error) {
     console.error('Error fetching categories:', error);
     throw error;
@@ -49,12 +59,16 @@ export const getAllCategories = async (): Promise<CategoryItem[]> => {
  */
 export const addCategory = async (name: string, description: string): Promise<CategoryItem> => {
   try {
-    // First check if category with this name already exists
+    // First check if category with this name already exists - case insensitive search
     const { data: existing, error: checkError } = await supabase
       .from('categories')
       .select('*')
       .ilike('name', name.trim())
       .single();
+    
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = not found, which is what we want
+      throw checkError;
+    }
     
     if (existing) {
       throw new Error(`Category with name "${name}" already exists`);
@@ -98,6 +112,10 @@ export const updateCategory = async (id: string, name: string, description: stri
       .neq('id', id)
       .ilike('name', name.trim())
       .single();
+    
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = not found, which is what we want
+      throw checkError;
+    }
     
     if (existing) {
       throw new Error(`Another category with name "${name}" already exists`);

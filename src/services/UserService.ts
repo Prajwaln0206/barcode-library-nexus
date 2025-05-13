@@ -144,7 +144,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
       throw new Error(`Cannot delete user with ${count} active loans. Please return all books first.`);
     }
     
-    // Delete all historical loans for this user
+    // Delete all historical loans for this user - use await to ensure completion
     const { error: loansDeleteError } = await supabase
       .from('loans')
       .delete()
@@ -155,7 +155,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
       throw new Error(`Error deleting user loans: ${loansDeleteError.message}`);
     }
     
-    // Delete all scan logs associated with this user
+    // Delete all scan logs associated with this user - use await to ensure completion
     const { error: scanLogsDeleteError } = await supabase
       .from('scan_logs')
       .delete()

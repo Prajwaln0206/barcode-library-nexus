@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Bookmark, Loader } from 'lucide-react';
 import PageTransition from '@/components/layout/PageTransition';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { CategoryItem } from '@/components/categories/types';
 import CategoryTable from '@/components/categories/CategoryTable';
 import AddCategoryForm from '@/components/categories/AddCategoryForm';
@@ -30,7 +30,16 @@ const Categories = () => {
     try {
       setLoading(true);
       const categoriesData = await getAllCategories();
-      setCategories(categoriesData);
+      // Ensure we don't have duplicates by ID
+      const uniqueIds = new Set();
+      const uniqueCategories = categoriesData.filter(category => {
+        if (uniqueIds.has(category.id)) {
+          return false;
+        }
+        uniqueIds.add(category.id);
+        return true;
+      });
+      setCategories(uniqueCategories);
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast({
@@ -100,7 +109,7 @@ const Categories = () => {
   };
 
   const startEdit = (category: CategoryItem) => {
-    setEditMode(category.id.toString());
+    setEditMode(category.id);
     setEditName(category.name);
     setEditDescription(category.description);
   };

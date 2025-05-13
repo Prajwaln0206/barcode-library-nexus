@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { BookOpen, Users, CheckSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -6,7 +5,7 @@ import PageTransition from '@/components/layout/PageTransition';
 import StatCard from '@/components/dashboard/StatCard';
 import QuickActions from '@/components/dashboard/QuickActions';
 import { DashboardStats, getDashboardStats } from '@/services/StatsService';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 const staggerDelay = 0.1;
 
@@ -14,6 +13,18 @@ const Index = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
+  
+  // Add a refresh trigger for the dashboard
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Force a refresh every 30 seconds to keep dashboard up to date
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 30000); // 30 seconds
+    
+    return () => clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
@@ -34,7 +45,7 @@ const Index = () => {
     };
 
     fetchDashboardStats();
-  }, [toast]);
+  }, [toast, refreshTrigger]); // Now depends on refreshTrigger
 
   return (
     <PageTransition>

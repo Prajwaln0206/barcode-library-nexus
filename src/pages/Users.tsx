@@ -7,13 +7,22 @@ import UserCard, { UserInfo } from '@/components/users/UserCard';
 import AddUserDialog from '@/components/users/AddUserDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { getAllUsers, deleteUser } from '@/services/UserService';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog';
 
 const Users = () => {
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState<UserInfo | null>(null);
   const { toast } = useToast();
   
   const fetchUsers = async () => {
@@ -54,22 +63,31 @@ const Users = () => {
     fetchUsers();
   };
   
+  // Show confirmation dialog before deleting a user
+  const showDeleteConfirm = (user: UserInfo) => {
+    setConfirmDelete(user);
+  };
+  
   // Delete a user from the database
-  const handleDeleteUser = async (user: UserInfo) => {
+  const handleDeleteUser = async () => {
+    if (!confirmDelete) return;
+    
     try {
-      await deleteUser(user.id);
-      setUsers(prevUsers => prevUsers.filter(u => u.id !== user.id));
+      await deleteUser(confirmDelete.id);
+      setUsers(prevUsers => prevUsers.filter(u => u.id !== confirmDelete.id));
       
       toast({
         title: 'User deleted',
-        description: `${user.name} has been removed from the system`,
+        description: `${confirmDelete.name} has been removed from the system`,
       });
-    } catch (error) {
+      
+      setConfirmDelete(null);
+    } catch (error: any) {
       console.error('Error deleting user:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to delete user',
+        description: error.message || 'Failed to delete user',
       });
     }
   };
@@ -103,6 +121,31 @@ const Users = () => {
           </Button>
         </div>
         
+        {/* Confirmation Dialog for Delete */}
+        <Dialog open={!!confirmDelete} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm User Deletion</DialogTitle>
+            </DialogHeader>
+            <DialogDescription>
+              Are you sure you want to delete user "{confirmDelete?.name}"? 
+              {confirmDelete?.booksCheckedOut > 0 && 
+                " This user has books checked out and cannot be deleted. Please return all books first."}
+              This action cannot be undone.
+            </DialogDescription>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmDelete(null)}>Cancel</Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteUser}
+                disabled={confirmDelete?.booksCheckedOut > 0}
+              >
+                Delete User
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <Loader className="h-8 w-8 animate-spin text-primary" />
@@ -121,7 +164,7 @@ const Users = () => {
                     user={user} 
                     onClick={handleUserClick}
                     onEdit={(user) => console.log('Edit user:', user)}
-                    onDelete={handleDeleteUser}
+                    onDelete={showDeleteConfirm}
                   />
                 </motion.div>
               ))

@@ -66,7 +66,8 @@ export const deleteBook = async (bookId: string) => {
       throw new Error('Cannot delete book with active loans');
     }
     
-    // Delete any historical loans for this book
+    // Delete any historical loans for this book - 
+    // Use "await" to ensure this completes before proceeding
     const { error: loansDeleteError } = await supabase
       .from('loans')
       .delete()
@@ -77,7 +78,8 @@ export const deleteBook = async (bookId: string) => {
       throw new Error(`Failed to delete book loans: ${loansDeleteError.message}`);
     }
     
-    // Delete any scan logs for this book
+    // Delete any scan logs for this book -
+    // Use "await" to ensure this completes before proceeding
     const { error: scanLogsDeleteError } = await supabase
       .from('scan_logs')
       .delete()
@@ -99,6 +101,7 @@ export const deleteBook = async (bookId: string) => {
       throw new Error(`Failed to delete book: ${deleteError.message}`);
     }
     
+    console.log('Book successfully deleted');
     return true;
   } catch (error) {
     console.error('Error in deleteBook:', error);
