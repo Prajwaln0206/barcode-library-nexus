@@ -15,15 +15,15 @@ import { CategoryItem } from '@/components/categories/types';
 
 interface CategoryTableProps {
   categories: CategoryItem[];
-  editMode: number | null;
+  editMode: string | null;
   editName: string;
   editDescription: string;
   setEditName: (value: string) => void;
   setEditDescription: (value: string) => void;
-  handleDeleteCategory: (id: number) => void;
+  handleDeleteCategory: (id: string) => void;
   startEdit: (category: CategoryItem) => void;
   cancelEdit: () => void;
-  saveEdit: (id: number) => void;
+  saveEdit: (id: string) => void;
 }
 
 const CategoryTable: React.FC<CategoryTableProps> = ({
