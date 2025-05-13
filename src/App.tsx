@@ -39,8 +39,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   return (
     <BrowserRouter>
-      <Toaster />
-      <Sonner />
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route element={
@@ -57,6 +55,8 @@ const AppRoutes = () => {
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
+      <Toaster />
+      <Sonner />
     </BrowserRouter>
   );
 };
