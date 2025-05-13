@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useCallback } from 'react';
 import { BookOpen, Users, CheckSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PageTransition from '@/components/layout/PageTransition';
@@ -26,26 +27,26 @@ const Index = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  useEffect(() => {
-    const fetchDashboardStats = async () => {
-      try {
-        setLoading(true);
-        const data = await getDashboardStats();
-        setStats(data);
-      } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch dashboard statistics',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchDashboardStats = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getDashboardStats();
+      setStats(data);
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch dashboard statistics',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
+  useEffect(() => {
     fetchDashboardStats();
-  }, [toast, refreshTrigger]); // Now depends on refreshTrigger
+  }, [fetchDashboardStats, refreshTrigger]); // Now depends on refreshTrigger
 
   return (
     <PageTransition>
@@ -116,6 +117,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: staggerDelay * 4 }}
+            className="lg:col-span-3"
           >
             <QuickActions />
           </motion.div>

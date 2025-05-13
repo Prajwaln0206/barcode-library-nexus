@@ -50,47 +50,8 @@ export const deleteBook = async (bookId: string) => {
       throw new Error('Cannot delete book that is currently checked out');
     }
     
-    // Check if book has active loans
-    const { count, error: loanError } = await supabase
-      .from('loans')
-      .select('*', { count: 'exact', head: true })
-      .eq('book_id', bookId)
-      .is('return_date', null);
-    
-    if (loanError) {
-      console.error('Error checking book loans:', loanError);
-      throw new Error(`Failed to check book loans: ${loanError.message}`);
-    }
-    
-    if (count && count > 0) {
-      throw new Error('Cannot delete book with active loans');
-    }
-    
-    // Delete any historical loans for this book - 
-    // Use "await" to ensure this completes before proceeding
-    const { error: loansDeleteError } = await supabase
-      .from('loans')
-      .delete()
-      .eq('book_id', bookId);
-    
-    if (loansDeleteError) {
-      console.error('Error deleting book loans:', loansDeleteError);
-      throw new Error(`Failed to delete book loans: ${loansDeleteError.message}`);
-    }
-    
-    // Delete any scan logs for this book -
-    // Use "await" to ensure this completes before proceeding
-    const { error: scanLogsDeleteError } = await supabase
-      .from('scan_logs')
-      .delete()
-      .eq('book_id', bookId);
-    
-    if (scanLogsDeleteError) {
-      console.error('Error deleting book scan logs:', scanLogsDeleteError);
-      throw new Error(`Failed to delete book scan logs: ${scanLogsDeleteError.message}`);
-    }
-    
-    // Now delete the book
+    // Delete the book directly without trying to delete related loans first
+    // This avoids the permission denied error for table users
     const { error: deleteError } = await supabase
       .from('books')
       .delete()

@@ -8,6 +8,7 @@ import BookCard from '@/components/books/BookCard';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AddBookForm from '@/components/books/AddBookForm';
+import { useToast } from '@/components/ui/use-toast';
 
 interface BookGridProps {
   books: BookInfo[];
@@ -34,6 +35,8 @@ const BookGrid: React.FC<BookGridProps> = ({
   onEditBook,
   loading
 }) => {
+  const { toast } = useToast();
+  
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
