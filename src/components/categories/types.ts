@@ -1,6 +1,6 @@
 
 export interface CategoryItem {
-  id: number;
+  id: string;
   name: string;
   description: string;
   count: number;

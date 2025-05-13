@@ -34,6 +34,7 @@ export type Database = {
         Row: {
           author: string
           barcode: string
+          category_id: string | null
           created_at: string | null
           genre: string | null
           id: string
@@ -45,6 +46,7 @@ export type Database = {
         Insert: {
           author: string
           barcode: string
+          category_id?: string | null
           created_at?: string | null
           genre?: string | null
           id?: string
@@ -56,6 +58,7 @@ export type Database = {
         Update: {
           author?: string
           barcode?: string
+          category_id?: string | null
           created_at?: string | null
           genre?: string | null
           id?: string
@@ -63,6 +66,35 @@ export type Database = {
           location?: string | null
           status?: string | null
           title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "books_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -185,6 +217,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_books_in_category: {
+        Args: { category_id: string }
+        Returns: number
+      }
       create_library_user: {
         Args: {
           user_id: string

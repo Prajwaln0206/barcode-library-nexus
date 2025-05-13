@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { UserInfo } from '@/components/users/UserCard';
 
@@ -143,7 +144,29 @@ export const deleteUser = async (userId: string): Promise<void> => {
       throw new Error(`Cannot delete user with ${count} active loans. Please return all books first.`);
     }
     
-    // If no active loans, proceed with deletion
+    // Delete all historical loans for this user
+    const { error: loansDeleteError } = await supabase
+      .from('loans')
+      .delete()
+      .eq('user_id', userId);
+    
+    if (loansDeleteError) {
+      console.error('Error deleting user loans:', loansDeleteError);
+      throw new Error(`Error deleting user loans: ${loansDeleteError.message}`);
+    }
+    
+    // Delete all scan logs associated with this user
+    const { error: scanLogsDeleteError } = await supabase
+      .from('scan_logs')
+      .delete()
+      .eq('scanned_by', userId);
+    
+    if (scanLogsDeleteError) {
+      console.error('Error deleting user scan logs:', scanLogsDeleteError);
+      throw new Error(`Error deleting user scan logs: ${scanLogsDeleteError.message}`);
+    }
+    
+    // Now delete the user
     const { error } = await supabase
       .from('users')
       .delete()

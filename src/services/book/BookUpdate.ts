@@ -1,73 +1,105 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { BookInfo } from '@/components/books/BookCard';
 
-// Update an existing book
-export const updateBook = async (book: BookInfo): Promise<BookInfo> => {
-  const { data, error } = await supabase
-    .from('books')
-    .update({
-      title: book.title,
-      author: book.author,
-      isbn: book.isbn,
-      genre: book.genre,
-      location: book.location,
-      status: book.isAvailable ? 'available' : 'checked_out'
-    })
-    .eq('id', book.id)
-    .select()
-    .single();
-  
-  if (error) {
-    console.error('Error updating book:', error);
+/**
+ * Update a book in the database
+ */
+export const updateBook = async (bookId: string, bookData: any) => {
+  try {
+    console.log('Updating book with ID:', bookId, 'and data:', bookData);
+    
+    const { data, error } = await supabase
+      .from('books')
+      .update(bookData)
+      .eq('id', bookId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating book:', error);
+      throw new Error(`Failed to update book: ${error.message}`);
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error in updateBook:', error);
     throw error;
   }
-  
-  return {
-    id: data.id,
-    title: data.title,
-    author: data.author,
-    isbn: data.isbn || '',
-    genre: data.genre || '',
-    location: data.location || '',
-    barcode: data.barcode,
-    isAvailable: data.status === 'available',
-    coverImage: undefined // Set default as undefined since cover_image doesn't exist in DB
-  };
 };
 
-// Delete a book from the database
-export const deleteBook = async (bookId: string): Promise<void> => {
+/**
+ * Delete a book from the database
+ */
+export const deleteBook = async (bookId: string) => {
   try {
-    // First, check if the book has any active loans
-    const { count: activeLoans, error: loanCheckError } = await supabase
+    console.log('Deleting book with ID:', bookId);
+    
+    // First, check if the book is currently checked out
+    const { data: bookData, error: bookError } = await supabase
+      .from('books')
+      .select('status')
+      .eq('id', bookId)
+      .single();
+    
+    if (bookError) {
+      console.error('Error checking book status:', bookError);
+      throw new Error(`Failed to check book status: ${bookError.message}`);
+    }
+    
+    if (bookData.status === 'checked_out') {
+      throw new Error('Cannot delete book that is currently checked out');
+    }
+    
+    // Check if book has active loans
+    const { count, error: loanError } = await supabase
       .from('loans')
       .select('*', { count: 'exact', head: true })
       .eq('book_id', bookId)
-      .is('return_date', null)
-      .eq('status', 'active');
+      .is('return_date', null);
     
-    if (loanCheckError) {
-      console.error('Error checking for active loans:', loanCheckError);
-      throw loanCheckError;
+    if (loanError) {
+      console.error('Error checking book loans:', loanError);
+      throw new Error(`Failed to check book loans: ${loanError.message}`);
     }
     
-    if (activeLoans && activeLoans > 0) {
-      throw new Error('Cannot delete a book that is currently checked out.');
+    if (count && count > 0) {
+      throw new Error('Cannot delete book with active loans');
     }
     
-    // If no active loans, proceed with deletion
-    const { error } = await supabase
+    // Delete any historical loans for this book
+    const { error: loansDeleteError } = await supabase
+      .from('loans')
+      .delete()
+      .eq('book_id', bookId);
+    
+    if (loansDeleteError) {
+      console.error('Error deleting book loans:', loansDeleteError);
+      throw new Error(`Failed to delete book loans: ${loansDeleteError.message}`);
+    }
+    
+    // Delete any scan logs for this book
+    const { error: scanLogsDeleteError } = await supabase
+      .from('scan_logs')
+      .delete()
+      .eq('book_id', bookId);
+    
+    if (scanLogsDeleteError) {
+      console.error('Error deleting book scan logs:', scanLogsDeleteError);
+      throw new Error(`Failed to delete book scan logs: ${scanLogsDeleteError.message}`);
+    }
+    
+    // Now delete the book
+    const { error: deleteError } = await supabase
       .from('books')
       .delete()
       .eq('id', bookId);
     
-    if (error) {
-      console.error('Error deleting book:', error);
-      throw error;
+    if (deleteError) {
+      console.error('Error deleting book:', deleteError);
+      throw new Error(`Failed to delete book: ${deleteError.message}`);
     }
     
-    console.log(`Book with ID ${bookId} deleted successfully`);
+    return true;
   } catch (error) {
     console.error('Error in deleteBook:', error);
     throw error;
