@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AddBookForm from '@/components/books/AddBookForm';
 import { useToast } from '@/components/ui/use-toast';
+import { deleteBook } from '@/services/BookService';
 
 interface BookGridProps {
   books: BookInfo[];
@@ -36,6 +37,29 @@ const BookGrid: React.FC<BookGridProps> = ({
   loading
 }) => {
   const { toast } = useToast();
+  
+  // Function to handle book deletion directly from the card
+  const handleDeleteBook = async (book: BookInfo) => {
+    try {
+      console.log('Deleting book:', book);
+      await deleteBook(book.id);
+      
+      toast({
+        title: "Book deleted",
+        description: `"${book.title}" has been removed from the catalog.`
+      });
+      
+      // Call the parent's onDeleteBook to update the UI
+      onDeleteBook(book);
+    } catch (error: any) {
+      console.error('Error deleting book:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to delete the book."
+      });
+    }
+  };
   
   if (loading) {
     return (
@@ -71,8 +95,8 @@ const BookGrid: React.FC<BookGridProps> = ({
             <BookCard 
               book={book} 
               onClick={() => onBookClick(book)}
-              onEdit={onEditBook}
-              onDelete={onDeleteBook}
+              onEdit={() => onEditBook(book)}
+              onDelete={() => handleDeleteBook(book)}
             />
           </motion.div>
         ))}

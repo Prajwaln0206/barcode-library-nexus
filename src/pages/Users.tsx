@@ -28,7 +28,9 @@ const Users = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      console.log('Fetching users...');
       const data = await getAllUsers();
+      console.log('Users fetched:', data);
       setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -53,7 +55,6 @@ const Users = () => {
   
   const handleUserClick = (user: UserInfo) => {
     console.log('User clicked:', user);
-    // In a real app, this would open a detailed view or a modal
   };
   
   // Add a new user to the database
@@ -65,6 +66,7 @@ const Users = () => {
   
   // Show confirmation dialog before deleting a user
   const showDeleteConfirm = (user: UserInfo) => {
+    console.log('Showing delete confirmation for user:', user);
     setConfirmDelete(user);
   };
   
@@ -73,7 +75,9 @@ const Users = () => {
     if (!confirmDelete) return;
     
     try {
+      console.log('Deleting user with ID:', confirmDelete.id);
       await deleteUser(confirmDelete.id);
+      
       setUsers(prevUsers => prevUsers.filter(u => u.id !== confirmDelete.id));
       
       toast({

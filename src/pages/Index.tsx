@@ -18,19 +18,12 @@ const Index = () => {
   // Add a refresh trigger for the dashboard
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Force a refresh every 30 seconds to keep dashboard up to date
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setRefreshTrigger(prev => prev + 1);
-    }, 30000); // 30 seconds
-    
-    return () => clearInterval(intervalId);
-  }, []);
-
   const fetchDashboardStats = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('Fetching dashboard stats...');
       const data = await getDashboardStats();
+      console.log('Dashboard stats fetched:', data);
       setStats(data);
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -45,11 +38,13 @@ const Index = () => {
   }, [toast]);
 
   useEffect(() => {
+    console.log('Dashboard effect triggered, fetching stats...');
     fetchDashboardStats();
-  }, [fetchDashboardStats, refreshTrigger]); // Now depends on refreshTrigger
+  }, [fetchDashboardStats, refreshTrigger]); 
 
   // Manual refresh function that can be called directly
   const handleManualRefresh = () => {
+    console.log('Manual refresh triggered');
     setRefreshTrigger(prev => prev + 1);
   };
 
