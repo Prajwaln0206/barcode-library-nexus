@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 // Pages
 import Index from "./pages/Index";
@@ -20,16 +20,28 @@ import Shell from "./components/layout/Shell";
 
 // Auth Context
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { useEffect } from "react";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, isAuthorized } = useAuth();
+  const location = useLocation();
+  
+  useEffect(() => {
+    console.log("Protected route render:", { user: !!user, loading, isAuthorized, path: location.pathname });
+  }, [user, loading, isAuthorized, location]);
   
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center h-screen">
+      <div className="flex flex-col items-center gap-2">
+        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p>Loading authentication...</p>
+      </div>
+    </div>;
   }
   
   if (!user || !isAuthorized) {
+    console.log("User not authorized, redirecting to auth from", location.pathname);
     return <Navigate to="/auth" replace />;
   }
   
@@ -61,7 +73,15 @@ const AppRoutes = () => {
   );
 };
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 10000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

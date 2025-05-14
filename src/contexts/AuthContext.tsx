@@ -30,7 +30,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.email);
         setSession(session);
         
         if (session?.user) {
@@ -42,8 +43,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsAuthorized(authorized);
           
           if (!authorized) {
-            // If not authorized, sign them out and show error
-            await supabase.auth.signOut();
+            // We'll handle unauthorized users more gracefully
+            console.log("User not authorized:", userEmail);
             toast({
               variant: "destructive",
               title: "Access Denied",
@@ -60,7 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session?.user?.email);
       if (session?.user) {
         setUser(session.user);
         
@@ -70,13 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthorized(authorized);
         
         if (!authorized) {
-          // If not authorized, sign them out and show error
-          await supabase.auth.signOut();
-          toast({
-            variant: "destructive",
-            title: "Access Denied",
-            description: "You are not authorized to access this system."
-          });
+          console.log("Initial check: User not authorized:", userEmail);
+          // We won't immediately sign them out - let the protected routes handle this
         }
       }
       
@@ -88,8 +85,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
+      console.log("Signing out user");
       await supabase.auth.signOut();
       setIsAuthorized(false);
+      setUser(null);
+      setSession(null);
     } catch (error) {
       console.error('Error signing out:', error);
     }

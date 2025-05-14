@@ -30,9 +30,11 @@ const Auth = () => {
   const { user, isAuthorized } = useAuth();
   
   useEffect(() => {
+    console.log("Auth page render:", { user: !!user, isAuthorized });
     // If user is already logged in and authorized, redirect to home page
     if (user && isAuthorized) {
-      navigate('/');
+      console.log("User is authorized, redirecting to home");
+      navigate('/', { replace: true });
     }
   }, [user, isAuthorized, navigate]);
   
@@ -61,6 +63,7 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      console.log("Attempting login for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -320,6 +323,61 @@ const Auth = () => {
       </motion.div>
     </div>
   );
+  
+  function handleSignUp(e: React.FormEvent) {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please enter both email and password."
+      });
+      return;
+    }
+    
+    // Verify if the email is in the authorized list
+    if (!AUTHORIZED_USERS.includes(email)) {
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "Only specific email addresses are allowed to register."
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const { data, error } = supabase.auth.signUp({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully. You can now log in."
+      });
+      
+      setActiveTab('login');
+      
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast({
+        variant: "destructive",
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred."
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+  
+  function togglePasswordVisibility() {
+    setShowPassword(!showPassword);
+  }
 };
 
 export default Auth;

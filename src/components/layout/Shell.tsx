@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
@@ -8,10 +8,20 @@ import {
   Drawer,
   DrawerContent,
 } from "@/components/ui/drawer";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Shell: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { user, isAuthorized } = useAuth();
+  const navigate = useNavigate();
+  
+  // Ensure we're authorized to be here
+  useEffect(() => {
+    if (!user || !isAuthorized) {
+      navigate('/auth', { replace: true });
+    }
+  }, [user, isAuthorized, navigate]);
   
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
