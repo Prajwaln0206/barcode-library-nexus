@@ -25,10 +25,10 @@ const Shell: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar toggleSidebar={toggleSidebar} />
       
-      <div className="flex flex-1">
+      <div className="flex flex-1 h-[calc(100vh-4rem)]">
         {/* Desktop sidebar */}
-        <div className="hidden md:block">
-          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+        <div className="hidden md:block w-64 flex-shrink-0">
+          <Sidebar isOpen={true} onClose={closeSidebar} />
         </div>
         
         {/* Mobile sidebar - using Drawer component */}
@@ -40,7 +40,7 @@ const Shell: React.FC = () => {
           </DrawerContent>
         </Drawer>
         
-        <main className="flex-1 pt-6 px-4 md:px-6 pb-12 transition-all duration-300">
+        <main className="flex-1 pt-6 px-4 md:px-6 pb-12 overflow-y-auto">
           <div className="container max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <Outlet key={location.pathname} />

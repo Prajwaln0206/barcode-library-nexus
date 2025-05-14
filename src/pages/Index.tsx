@@ -48,12 +48,25 @@ const Index = () => {
     fetchDashboardStats();
   }, [fetchDashboardStats, refreshTrigger]); // Now depends on refreshTrigger
 
+  // Manual refresh function that can be called directly
+  const handleManualRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   return (
     <PageTransition>
-      <div className="space-y-8">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">NGO Library Management System</h1>
-          <p className="text-muted-foreground">Manage your library resources efficiently</p>
+      <div className="space-y-8 mb-10">
+        <div className="space-y-2 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">NGO Library Management System</h1>
+            <p className="text-muted-foreground">Manage your library resources efficiently</p>
+          </div>
+          <button 
+            onClick={handleManualRefresh}
+            className="text-xs text-primary hover:underline"
+          >
+            Refresh Dashboard
+          </button>
         </div>
         
         {loading ? (
@@ -112,12 +125,11 @@ const Index = () => {
           </div>
         )}
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: staggerDelay * 4 }}
-            className="lg:col-span-3"
           >
             <QuickActions />
           </motion.div>
