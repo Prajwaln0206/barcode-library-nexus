@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { BookInfo } from '@/components/books/BookCard';
 
@@ -40,7 +39,7 @@ export const getAllBooks = async (): Promise<BookInfo[]> => {
         location: book.location || '',
         barcode: book.barcode,
         isAvailable: book.status !== 'checked_out',
-        coverImage: null // Changed from book.cover_image to fix the error
+        coverImage: null // This property doesn't exist in the database
       };
     });
   } catch (error) {
@@ -81,7 +80,7 @@ export const getBookById = async (id: string): Promise<BookInfo | null> => {
       location: book.location || '',
       barcode: book.barcode,
       isAvailable: book.status !== 'checked_out',
-      coverImage: null // Changed from book.cover_image to fix the error
+      coverImage: null // This property doesn't exist in the database
     };
   } catch (error) {
     console.error(`Error fetching book with ID ${id}:`, error);
@@ -163,7 +162,7 @@ export const getBookByBarcode = async (barcode: string): Promise<BookInfo | null
       location: book.location || '',
       barcode: book.barcode,
       isAvailable: book.status !== 'checked_out',
-      coverImage: null // Changed from book.cover_image to fix the error
+      coverImage: null // This property doesn't exist in the database
     };
   } catch (error) {
     console.error(`Error fetching book with barcode ${barcode}:`, error);

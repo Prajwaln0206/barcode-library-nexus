@@ -144,8 +144,19 @@ export const deleteUser = async (userId: string): Promise<void> => {
       throw new Error(`Cannot delete user with ${count} active loans. Please return all books first.`);
     }
     
-    // Instead of trying to delete related records directly, use a direct delete with the users table
-    // This approach relies on RLS policies or cascade delete settings in the database
+    // If there are returned loans, we need to nullify the user_id instead of deleting the loans
+    // This preserves loan history while allowing user deletion
+    const { error: updateError } = await supabase
+      .from('loans')
+      .update({ user_id: null })
+      .eq('user_id', userId);
+      
+    if (updateError) {
+      console.error('Error nullifying user_id in loans:', updateError);
+      throw new Error(`Failed to update loan records: ${updateError.message}`);
+    }
+    
+    // Now delete the user
     const { error } = await supabase
       .from('users')
       .delete()
@@ -162,3 +173,4 @@ export const deleteUser = async (userId: string): Promise<void> => {
     throw error;
   }
 };
+
