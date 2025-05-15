@@ -7,7 +7,8 @@ export {
   deleteBook,
   getBookByBarcode,
   addBook,
-  BookCreate
 } from './book/BookCore';
+// Export the BookCreate interface as a type
+export type { BookCreate } from './book/BookCore';
 export * from './book/BookUpdate';
 export * from './book/BookScan';
