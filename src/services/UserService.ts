@@ -144,16 +144,16 @@ export const deleteUser = async (userId: string): Promise<void> => {
       throw new Error(`Cannot delete user with ${count} active loans. Please return all books first.`);
     }
     
-    // If there are returned loans, we need to nullify the user_id instead of deleting the loans
-    // This preserves loan history while allowing user deletion
-    const { error: updateError } = await supabase
+    // Instead of trying to nullify user_id, we should delete the loan records 
+    // associated with this user, since the user_id column is not nullable
+    const { error: deleteLoanError } = await supabase
       .from('loans')
-      .update({ user_id: null })
+      .delete()
       .eq('user_id', userId);
       
-    if (updateError) {
-      console.error('Error nullifying user_id in loans:', updateError);
-      throw new Error(`Failed to update loan records: ${updateError.message}`);
+    if (deleteLoanError) {
+      console.error('Error deleting loan records:', deleteLoanError);
+      throw new Error(`Failed to delete loan records: ${deleteLoanError.message}`);
     }
     
     // Now delete the user
@@ -173,4 +173,3 @@ export const deleteUser = async (userId: string): Promise<void> => {
     throw error;
   }
 };
-
