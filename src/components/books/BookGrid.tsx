@@ -8,7 +8,7 @@ import BookCard from '@/components/books/BookCard';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AddBookForm from '@/components/books/AddBookForm';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { deleteBook } from '@/services/BookService';
 
 interface BookGridProps {
