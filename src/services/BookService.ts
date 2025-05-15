@@ -4,11 +4,14 @@
 export {
   getAllBooks,
   getBookById,
-  deleteBook,
   getBookByBarcode,
-  addBook,
-} from './book/BookCore';
+} from './book/BookFetch';
+
+export { addBook } from './book/BookCreate';
+export { deleteBook } from './book/BookDelete';
+
 // Export the BookCreate interface as a type
-export type { BookCreate } from './book/BookCore';
+export type { BookCreate } from './book/BookTypes';
+
 export * from './book/BookUpdate';
 export * from './book/BookScan';
