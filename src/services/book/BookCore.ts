@@ -1,101 +1,121 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { BookInfo } from '@/components/books/BookCard';
-import { generateUniqueBarcode } from '@/lib/barcodeUtils';
 
-// Type for creating a new book
-export type BookCreate = Omit<BookInfo, 'id' | 'barcode'>;
-
-// Get all books from the database
+/**
+ * Fetch all books from the database
+ * @returns Array of books
+ */
 export const getAllBooks = async (): Promise<BookInfo[]> => {
-  const { data, error } = await supabase
-    .from('books')
-    .select('*');
-  
-  if (error) {
+  try {
+    const { data: books, error } = await supabase
+      .from('books')
+      .select(`
+        id, title, author, isbn, genre, location, barcode, status,
+        categories (id, name)
+      `)
+      .order('title', { ascending: true });
+    
+    if (error) throw error;
+
+    return books.map(book => {
+      // Transform the database structure to match the BookInfo interface
+      return {
+        id: book.id,
+        title: book.title,
+        author: book.author,
+        isbn: book.isbn || '',
+        genre: book.genre || 'Uncategorized',
+        location: book.location || '',
+        barcode: book.barcode,
+        isAvailable: book.status !== 'checked_out',
+        coverImage: book.cover_image || null
+      };
+    });
+  } catch (error) {
     console.error('Error fetching books:', error);
     throw error;
   }
-  
-  // Map the database records to BookInfo objects
-  return data.map((book: any) => ({
-    id: book.id,
-    title: book.title,
-    author: book.author,
-    isbn: book.isbn || '',
-    genre: book.genre || '',
-    location: book.location || '',
-    barcode: book.barcode,
-    isAvailable: book.status === 'available',
-    coverImage: undefined // Set default as undefined since cover_image doesn't exist in DB
-  }));
 };
 
-// Get a book by its barcode
-export const getBookByBarcode = async (barcode: string): Promise<BookInfo | null> => {
-  const { data, error } = await supabase
-    .from('books')
-    .select('*')
-    .eq('barcode', barcode)
-    .maybeSingle();
-  
-  if (error) {
-    console.error('Error fetching book by barcode:', error);
-    throw error;
-  }
-  
-  if (!data) return null;
-  
-  return {
-    id: data.id,
-    title: data.title,
-    author: data.author,
-    isbn: data.isbn || '',
-    genre: data.genre || '',
-    location: data.location || '',
-    barcode: data.barcode,
-    isAvailable: data.status === 'available',
-    coverImage: undefined // Set default as undefined since cover_image doesn't exist in DB
-  };
-};
-
-// Add a new book to the database
-export const addBook = async (book: BookCreate): Promise<BookInfo> => {
-  // Generate a new UUID for the book (will be handled by the database)
-  // Generate a unique barcode
-  const tempId = crypto.randomUUID();
-  const barcode = generateUniqueBarcode(tempId);
-  
-  const { data, error } = await supabase
-    .from('books')
-    .insert([
-      {
-        title: book.title,
-        author: book.author,
-        isbn: book.isbn,
-        genre: book.genre,
-        location: book.location,
-        barcode: barcode,
-        status: 'available'
+/**
+ * Get a book by ID
+ * @param id Book ID
+ * @returns Book information or null if not found
+ */
+export const getBookById = async (id: string): Promise<BookInfo | null> => {
+  try {
+    const { data: book, error } = await supabase
+      .from('books')
+      .select(`
+        id, title, author, isbn, genre, location, barcode, status,
+        categories (id, name)
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null; // Book not found
       }
-    ])
-    .select()
-    .single();
-  
-  if (error) {
-    console.error('Error adding book:', error);
+      throw error;
+    }
+
+    return {
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      isbn: book.isbn || '',
+      genre: book.genre || 'Uncategorized',
+      location: book.location || '',
+      barcode: book.barcode,
+      isAvailable: book.status !== 'checked_out',
+      coverImage: book.cover_image || null
+    };
+  } catch (error) {
+    console.error(`Error fetching book with ID ${id}:`, error);
     throw error;
   }
-  
-  return {
-    id: data.id,
-    title: data.title,
-    author: data.author,
-    isbn: data.isbn || '',
-    genre: data.genre || '',
-    location: data.location || '',
-    barcode: data.barcode,
-    isAvailable: data.status === 'available',
-    coverImage: undefined // Set default as undefined since cover_image doesn't exist in DB
-  };
+};
+
+/**
+ * Delete a book from the database
+ * @param bookId Book ID to delete
+ */
+export const deleteBook = async (bookId: string): Promise<void> => {
+  try {
+    console.log('Deleting book with ID:', bookId);
+
+    // First, check if the book is currently checked out
+    const { data: book, error: fetchError } = await supabase
+      .from('books')
+      .select('status')
+      .eq('id', bookId)
+      .single();
+      
+    if (fetchError) {
+      console.error('Error fetching book status:', fetchError);
+      throw new Error(`Could not check book status: ${fetchError.message}`);
+    }
+    
+    if (book.status === 'checked_out') {
+      throw new Error('Cannot delete a book that is currently checked out');
+    }
+
+    // Delete the book directly - let the database handle cascading deletions if needed
+    const { error } = await supabase
+      .from('books')
+      .delete()
+      .eq('id', bookId);
+    
+    if (error) {
+      console.error('Error deleting book:', error);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    
+    console.log('Book successfully deleted');
+  } catch (error) {
+    console.error('Error in deleteBook:', error);
+    throw error;
+  }
 };

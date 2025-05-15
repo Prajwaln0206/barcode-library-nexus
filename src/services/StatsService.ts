@@ -19,7 +19,10 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       .from('books')
       .select('*', { count: 'exact', head: true });
     
-    if (booksError) throw booksError;
+    if (booksError) {
+      console.error('Error fetching total books:', booksError);
+      throw booksError;
+    }
 
     // Get number of books currently checked out
     const { count: booksCheckedOut, error: checkedOutError } = await supabase
@@ -27,14 +30,20 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'checked_out');
     
-    if (checkedOutError) throw checkedOutError;
+    if (checkedOutError) {
+      console.error('Error fetching checked out books:', checkedOutError);
+      throw checkedOutError;
+    }
 
     // Get total number of members/users
     const { count: totalMembers, error: membersError } = await supabase
       .from('users')
       .select('*', { count: 'exact', head: true });
     
-    if (membersError) throw membersError;
+    if (membersError) {
+      console.error('Error fetching total members:', membersError);
+      throw membersError;
+    }
 
     // Get number of active members (users with at least one active loan)
     const { data: activeLoans, error: activeLoansError } = await supabase
@@ -43,12 +52,17 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       .is('return_date', null)
       .eq('status', 'active');
     
-    if (activeLoansError) throw activeLoansError;
+    if (activeLoansError) {
+      console.error('Error fetching active loans:', activeLoansError);
+      throw activeLoansError;
+    }
     
     // Get unique user IDs from active loans
-    const activeUserIds = [...new Set(activeLoans.map(loan => loan.user_id))];
+    const activeUserIds = activeLoans && activeLoans.length > 0 
+      ? [...new Set(activeLoans.map(loan => loan.user_id))] 
+      : [];
     
-    // Count active members - fix the issue with empty array
+    // Count active members
     let activeMembers = 0;
     if (activeUserIds.length > 0) {
       const { count, error: activeMembersError } = await supabase
@@ -56,7 +70,10 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
         .select('*', { count: 'exact', head: true })
         .in('id', activeUserIds);
       
-      if (activeMembersError) throw activeMembersError;
+      if (activeMembersError) {
+        console.error('Error fetching active members:', activeMembersError);
+        throw activeMembersError;
+      }
       activeMembers = count || 0;
     }
 
@@ -64,7 +81,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       totalBooks: totalBooks || 0,
       booksCheckedOut: booksCheckedOut || 0,
       totalMembers: totalMembers || 0,
-      activeMembers: activeMembers || 0,
+      activeMembers: activeMembers,
     };
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
